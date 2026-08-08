@@ -1,0 +1,63 @@
+/* 浅色和深色主题设计令牌。 */
+:root,
+html[data-theme='light'] {
+  --mp-color-primary: #409eff;
+  --mp-color-primary-soft: #1677ff;
+  --mp-color-bg: #ffffff;
+  --mp-color-surface: #ffffff;
+  --mp-color-surface-2: #f8fafc;
+  --mp-color-text: #1f2937;
+  --mp-color-text-strong: #0f172a;
+  --mp-color-text-secondary: #64748b;
+  --mp-color-text-muted: #94a3b8;
+  --mp-color-border: #e5e7eb;
+  --mp-color-border-strong: #cbd5e1;
+  --mp-color-card: #ffffff;
+  --mp-color-hover: rgba(15, 23, 42, 0.05);
+  --mp-color-hover-strong: rgba(15, 23, 42, 0.08);
+  --mp-color-active: rgba(64, 158, 255, 0.12);
+  --mp-color-input-bg: #ffffff;
+  --mp-color-overlay: rgba(0, 0, 0, 0.45);
+  --mp-color-success: #10b981;
+  --mp-color-warning: #f59e0b;
+  --mp-color-danger: #ef4444;
+  --mp-color-info: #3b82f6;
+  --mp-radius-sm: 8px;
+  --mp-radius: 12px;
+  --mp-radius-lg: 16px;
+  --mp-radius-pill: 999px;
+  --mp-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.05);
+  --mp-shadow-md: 0 6px 20px rgba(15, 23, 42, 0.1);
+  --mp-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --mp-scrollbar-thumb: rgba(0, 0, 0, 0.2);
+  --mp-scrollbar-track: transparent;
+}
+
+/* 深色主题使用 #0f172a、#1e293b 和 #334155 表面层级。 */
+html[data-theme='dark'] {
+  --mp-color-primary: #3b82f6;
+  --mp-color-primary-soft: #60a5fa;
+  --mp-color-bg: #0f172a;
+  --mp-color-surface: #1e293b;
+  --mp-color-surface-2: #0f172a;
+  --mp-color-text: #e2e8f0;
+  --mp-color-text-strong: #f1f5f9;
+  --mp-color-text-secondary: #94a3b8;
+  --mp-color-text-muted: #64748b;
+  --mp-color-border: #334155;
+  --mp-color-border-strong: #475569;
+  --mp-color-card: #1e293b;
+  --mp-color-hover: rgba(255, 255, 255, 0.08);
+  --mp-color-hover-strong: rgba(255, 255, 255, 0.12);
+  --mp-color-active: rgba(59, 130, 246, 0.15);
+  --mp-color-input-bg: #0f172a;
+  --mp-color-overlay: rgba(15, 23, 42, 0.72);
+  --mp-color-success: #34d399;
+  --mp-color-warning: #fbbf24;
+  --mp-color-danger: #f87171;
+  --mp-color-info: #60a5fa;
+  --mp-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --mp-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --mp-scrollbar-thumb: rgba(148, 163, 184, 0.35);
+  --mp-scrollbar-track: transparent;
+}

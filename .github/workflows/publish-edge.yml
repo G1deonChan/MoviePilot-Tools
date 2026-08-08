@@ -62,10 +62,10 @@ jobs:
       - name: 上传扩展包至 Edge Add-ons
         id: upload
         run: |
-          # 排除 -crx.zip（Chrome 专用包），选择标准 .zip
-          ZIP_FILE=$(ls release/*.zip 2>/dev/null | grep -v '\-crx\.zip$' | head -1)
+          # 排除 -crx.zip（Chrome 专用包）与外置资源包（mp-ocr-offline/mp-site-icons），选择标准 .zip
+          ZIP_FILE=$(ls release/*.zip 2>/dev/null | grep -Ev '\-crx\.zip$' | grep -Ev '^(mp-ocr-offline|mp-site-icons)' | head -1)
           if [ -z "$ZIP_FILE" ]; then
-            echo "::error::未找到 .zip 包（排除 -crx.zip）"
+            echo "::error::未找到标准扩展 .zip 包"
             ls release/
             exit 1
           fi

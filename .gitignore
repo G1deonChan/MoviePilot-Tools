@@ -99,3 +99,29 @@ Thumbs.db
 
 # Workbuddy workspace config
 .workbuddy/
+
+# WXT 构建缓存与输出（均可重新构建）
+.wxt/
+.output/
+
+# CRX 私钥目录（CI 由 secret 还原，勿提交）
+keys/
+
+# Playwright 浏览器配置（本地测试残留）
+.playwright-*/
+playwright-report/
+
+# 测试报告
+test-results/
+
+# 构建产物兜底（release/ 已忽略）
+*.crx
+
+# CodeBuddy 项目数据
+.codebuddy/
+
+# 本地技能目录（不参与发布）
+karpathy-guidelines__skillhub/
+
+# 开发文档目录（不参与发布；docs/ 中的公开文档不受影响）
+/doc/

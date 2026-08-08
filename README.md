@@ -1,238 +1,397 @@
-# MoviePilot Tools - 浏览器扩展
+<!-- markdownlint-disable MD013 MD028 MD033 -->
+
+# MoviePilot Tools 2.0 - 浏览器扩展
 
 <div align="center">
   <img src="public/icons/icon.png" width="100" height="100" alt="MoviePilot Tools Logo">
-  <h3>专为自建 MoviePilot 用户打造的现代化全功能浏览器扩展助手</h3>
+  <h3>为自建 MoviePilot 用户打造的现代化浏览器扩展工具箱</h3>
 
-  [![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue.svg?style=flat-square)](#)
-  [![Vue 3](https://img.shields.io/badge/Vue-3.x-emerald.svg?style=flat-square)](#)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg?style=flat-square)](#)
-  [![ONNX Runtime Web](https://img.shields.io/badge/ONNX_Runtime-WebAssembly-orange.svg?style=flat-square)](#)
+  [![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue.svg?style=flat-square)](https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3)
+  [![WXT](https://img.shields.io/badge/WXT-0.19-8b5cf6.svg?style=flat-square)](https://wxt.dev/)
+  [![Vue 3](https://img.shields.io/badge/Vue-3.x-42b883.svg?style=flat-square)](https://vuejs.org/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6.svg?style=flat-square)](https://www.typescriptlang.org/)
+  [![Version](https://img.shields.io/badge/version-2.0.0-1677ff.svg?style=flat-square)](#-当前版本)
   [![License](https://img.shields.io/badge/license-GPL--3.0-green.svg?style=flat-square)](LICENSE)
-  [![Extension Size](https://img.shields.io/badge/ZIP_Size-31.2_MB-blueviolet.svg?style=flat-square)](#)
 </div>
-
----
-
-> [!IMPORTANT]
->
-> **⚠️ 项目迁移公告：v1 版本停止更新**
->
-> **MoviePilot Tools v1** 已停止更新维护，后续全部开发迁移至本仓库 **V2 分支**（全新重写的 **MoviePilot Tools 2.0** 版本）。
->
-> - **新版本地址**：本仓库 `V2` 分支
-> - **数据迁移**：2.0 版本支持直接导入 v1 版本导出的本地 JSON 备份，一键还原凭据、TOTP、设置等数据
-> - **建议**：现有 v1 用户请尽快升级迁移至 2.0 版本，以获得后续全部新功能与维护支持
->
-> 本文档以下内容仍适用于 v1 版本（历史版本），新版本说明请移步 `V2` 分支查看。
 
 ---
 
 ## 📖 项目简介
 
-**MoviePilot Tools** 是一个基于 Chrome Extension Manifest V3 标准构建的浏览器扩展，专为 MoviePilot 用户设计。它提供了一套完整的站点管理、数据查看、下载推送、两步验证管理（TOTP）以及完全本地化的验证码识别功能，全面提升用户管理自建影视媒体系统的体验。
+**MoviePilot Tools 2.0** 是使用 WXT、Vue 3 和 TypeScript 重构的 Chrome
+Manifest V3 浏览器扩展。它连接用户自己的 MoviePilot 实例，在浏览器中统一提供站点与
+Cookie/UA 管理、站点数据统计、下载任务控制、TOTP 两步验证、加密凭据、插件页嵌入、
+智能助手、用户信息、验证码识别和加密备份等能力。
+
+2.0 不只是旧版界面的迁移。项目重新整理了扩展入口、业务服务、本地存储、敏感数据加密、
+备份恢复、OCR 资产和页面通信边界，并继续保留旧版常用的站点管理、下载推送、自动填充、
+移动端文件导入和自定义主题体验。
 
 > [!NOTE]
-> 本项目由 AI 辅助开发完成。由于 AI 辅助开发的特性，项目细节、类型定义或代码结构中可能仍存在一些不足之处。非常欢迎各位技术大佬提交 Pull Request (PR) 或反馈 Issue，共同优化和改进本项目！
+> 本扩展是 MoviePilot 的辅助工具，不是独立的 MoviePilot 服务端。登录、站点、下载、插件、
+> 用户信息和部分 OCR 能力需要可访问的 MoviePilot 实例。
+
+> [!IMPORTANT]
+> 扩展会处理 MoviePilot 登录信息、PT 站点 Cookie、账号密码和 TOTP Secret 等敏感数据。
+> 请妥善保管恢复密钥和导出的备份文件，并建议在共享设备上启用 PIN 安全锁。
 
 ---
 
 ## ✨ 核心功能
 
-### 1. 离线验证码自动识别 (Offline OCR)
-- **绝对隐私安全**：内置基于 WebAssembly 和 ONNX Runtime Web 的神经网络识别引擎。**验证码图片无需上传到任何第三方云端接口**，完全在浏览器本地沙盒内完成识别，极速且零隐私泄露风险。
-- **极佳兼容性**：在 Offscreen 独立后台运行识别，不阻塞主界面。支持自动识别并一键填充目标 PT 站点的登录验证码。
+### 1. 站点管理与 Cookie/UA 同步
 
-### 2. 站点管理与差异检测
-- **Cookie & UA 同步**：自动检测浏览器当前已登录站点的 Cookie 及 User-Agent，并与 MoviePilot 服务器上的配置进行比对。
-- **一键差相同步**：一键将浏览器中最新的 Cookie 更新同步至自建服务器，彻底解决因 Cookie 过期导致站点检索失效的痛点。
-- **状态管理**：支持批量启用、禁用及直接在侧边栏中快捷跳转到 PT 站点。
+- **统一站点视图**：合并 MoviePilot 已适配站点、服务器已配置站点和浏览器有效登录会话。
+- **七项状态筛选**：支持浏览器、服务器、CK 差异、UA 差异、未登录、未添加和未拥有，多项筛选按 OR 组合。
+- **差异检测**：规范化比较浏览器 Cookie、MoviePilot Cookie 和 User-Agent，未登录站点不会误报 CK/UA 差异。
+- **站点操作**：支持新增、编辑、删除、测试、启用、禁用、批量打开和清理浏览器 Cookie。
+- **双向覆盖**：可将浏览器 Cookie/UA 更新到 MoviePilot，也可将服务器 Cookie 覆盖到浏览器。
+- **主备域名**：支持同一站点关联多个域名，在主域名和备用域名间切换。
+- **自动任务**：可按间隔同步 Cookie/UA、自动打开站点，并按设置延时关闭标签页。
 
-### 3. 站点数据图表统计
-- **全局概览**：实时拉取并展示总上传量、总下载量、分享率、时魔以及当前活跃做种数。
-- **精美卡片列表**：支持按分享率、上传、下载、做种数等多维度排序及筛选。
-- **数据图片导出**：支持一键将站点统计数据卡片渲染并导出为高质量的 PNG 图片，方便分享。
+### 2. 站点数据统计
 
-### 4. 强大的下载管理
-- **一键推送**：在任意网页检测到磁力链接、种子文件（`.torrent`）或站点下载链接时，可一键将其推送到自建服务器关联的下载器中。
-- **下载任务监控**：实时同步展示下载器（如 Transmission, QBittorrent 等）中的下载任务列表、速度、进度及健康度，并支持删除任务。
-- **路径快捷选择**：支持一键从 MoviePilot 配置的保存目录列表中选择目标路径。
+- **数据总览**：展示总上传、总下载、总做种数和总做种体积。
+- **站点明细**：支持搜索、排序和顺序刷新，避免同时访问大量 PT 站点。
+- **隐私模式**：一键隐藏敏感数据，适合截图或公开展示。
+- **多格式导出**：支持将数据导出为 JSON、CSV 和 PNG 图片。
 
-### 5. 安全的 TOTP 两步验证器
-- **多站点管理**：支持添加、生成和管理多个 PT 站点的 6 位两步验证码（TOTP），自带环形倒计时进度条。
-- **扫码快速添加**：支持直接通过浏览器摄像头扫描网页二维码，或导入本地图片快速解析添加密钥。
-- **WebDav 自动备份**：配置私有 WebDav 存储，可将 TOTP 密钥加密备份至云端。**支持自动保留份数限制**，超出后自动清理旧备份，避免网盘文件冗余。
+### 3. 下载管理
 
-### 6. PIN 码安全锁与数据加密
-- **PIN 码验证**：可设置 6 位安全 PIN 码。支持在“每次打开”、“每次浏览器会话”时进行解锁校验，防止物理设备被他人借用时泄漏敏感信息。
-- **AES 本地加密**：所有敏感数据（如 API Token、TOTP 密钥、WebDav 密码）均在浏览器本地使用 AES 强加密存储。
+- **多下载器管理**：查看 MoviePilot 已连接下载器及对应任务。
+- **实时任务状态**：每 5 秒刷新任务进度、体积、速度和剩余时间。
+- **任务控制**：支持暂停、继续和删除下载任务。
+- **多种添加方式**：支持磁力链接、种子链接、站点资源和媒体识别结果。
+- **保存路径选择**：复用 MoviePilot 保存目录配置选择目标路径。
+- **PT 站点浮动入口**：在支持的种子详情页提供一键下载按钮，将任务传递到扩展下载页面。
 
-> [!IMPORTANT]
-> **强烈建议启用扩展 PIN 码锁**：由于本扩展会读取并同步敏感的自建服务器 API 密钥、PT 站点 Cookie 以及两步验证 (TOTP) 私钥，为了你站点的账号和隐私安全，如果你的开发或使用设备有被他人接触的可能性，请务必在“设置”中启用 PIN 码安全锁。
+### 4. TOTP 两步验证
+
+- **RFC 6238**：本地生成 6 位 TOTP 验证码，并显示 30 秒倒计时。
+- **站点管理**：支持 PT 站点和自定义分组，以及搜索、排序、编辑、移动和删除。
+- **自动填充**：登录页只向扩展后台请求当期验证码，网页脚本无法读取 TOTP Secret。
+- **扫码添加**：支持读取活动页面中的 `otpauth` 链接、二维码，以及导入本地二维码图片。
+- **导入导出**：支持 2.0 加密 JSON，并兼容旧项目正式导出的 TOTP 加密备份。
+- **远端备份**：支持 MoviePilot 和 WebDAV 手动或自动备份。
+
+### 5. 凭据管理
+
+- **加密保存**：登录账号和密码存放于统一加密私有仓，不额外维护明文持久化副本。
+- **自动保存与更新**：登录时可提示新增或更新凭据。
+- **自动匹配与填充**：根据站点域名匹配凭据，并支持逐条关闭自动保存或自动填充。
+- **内置分组**：提供 PT站点、内网和自定义分组；内网 IP、`localhost`、`.local` 和本地主机名可自动归类。
+- **自定义分组**：支持创建、重命名、排序和删除自定义分组。
+- **站点屏蔽**：可按站点关闭登录填充、验证码填充或凭据保存提示。
+- **Bitwarden 导入**：可导入 Bitwarden JSON 中的登录凭据和 TOTP，提供新增、更新、保留、重复及跳过预览。
+- **安全合并**：相同数据仅在 Bitwarden 修改日期严格更新时覆盖；TOTP 密钥不会显示在导入预览明细中。
+- **本地导入导出**：支持恢复密钥加密的 2.0 JSON，并兼容旧版正式凭据备份。
+
+### 6. 验证码识别
+
+- **三级识别链**：依次支持本地 ONNX、MoviePilot OCR 服务和 AI 视觉接口。
+- **完全本地推理**：离线模型通过 ONNX Runtime Web 在 Offscreen Document 中执行，不阻塞弹窗页面。
+- **页面像素识别**：直接读取页面当前图片、Canvas、SVG 或背景图像素，不会再次请求验证码 URL，避免刷新服务端验证码会话。
+- **复杂页面适配**：支持登录页、Ajax 弹窗以及简繁体验证码关键词检测。
+- **透明图片处理**：透明验证码会先铺设白底并放大，再交给识别引擎。
+- **资源管理**：OCR 模型、词表和 WASM 通过外置离线包导入 IndexedDB，不直接塞入主扩展包。
+- **纠错词表**：支持自定义纠错规则及词表导入导出。
+
+### 7. 插件管理与网页嵌入
+
+- **原生插件页面**：在扩展中嵌入 MoviePilot 原生插件管理页。
+- **登录态同步**：向 iframe 注入当前 Token 和用户资料，并在页面关闭时只清理由扩展注入的状态。
+- **主题同步**：支持浅色、深色和自定义背景外观同步。
+- **完整插件能力**：安装、卸载、重置、设置及数据页面仍由 MoviePilot 原生前端提供。
+
+### 8. 智能助手
+
+- **流式对话**：支持实时响应、中止当前请求和错误恢复。
+- **会话管理**：支持创建、恢复、保存、切换和删除会话。
+- **富内容**：支持 Markdown、图片、附件、选择卡片和录音附件。
+- **快捷操作**：支持斜杠命令和快捷命令。
+- **安全存储**：AI Token 存入加密私有仓。
+
+### 9. 用户信息与账号管理
+
+- **用户资料**：查看管理员、激活状态，并编辑用户名和邮箱。
+- **多账号库**：保存多个 MoviePilot 账号并快捷切换当前账号。
+- **综合信息**：查看订阅、站点、Cookie、MoviePilot 后端、前端和扩展版本。
+- **会话恢复**：Token 失效时支持使用当前账号静默重新登录并重试一次请求。
+
+### 10. 设置、主题与安全
+
+- **主题模式**：支持跟随系统、浅色和深色主题。
+- **自定义背景**：支持本地图片、URL、MoviePilot 壁纸和每日壁纸，并可调节模糊度与透明度。
+- **PIN 安全锁**：支持 6 位 PIN，可设置会话内验证或每次验证。
+- **网页功能开关**：集中控制 PT 浮动下载、凭据保存填充、TOTP 和验证码识别。
+- **本地数据管理**：支持查看并清理缓存、外置资产和全部扩展数据。
+- **备份设置**：统一配置恢复密钥、MoviePilot 备份和 WebDAV 备份。
 
 ---
 
-## 🎨 现代感 UI/UX 设计
+## 🔒 数据安全与加密备份
 
-- **极简滑动指示器**：PC 侧边栏采用扁平化的滑动淡入蓝色条设计，去除了多余的边框和背景块，轻量优雅。
-- **毛玻璃微渐变适配**：支持用户上传自定义背景图片，并提供高模糊毛玻璃边框和半透明卡片叠加层，提供极致视觉美感。
-- **移动端自适应**：自动检测设备类型，在手机等窄屏设备上自动折叠侧边栏并转化为美观的底部横向菜单栏。
+### 统一加密私有仓
+
+敏感数据统一存放在 `local:mpt2.private` 加密信封中，包括：
+
+- MoviePilot Base URL、账号重新登录资料、Token 和用户档案；
+- 凭据、TOTP Secret、WebDAV 密码和 AI Token；
+- 恢复根密钥及安全配置。
+
+本地私有仓使用 Web Crypto API 实现 AES-256-GCM、HKDF-SHA256 和随机 DEK 包装。设备根密钥只保护当前设备；新信封解密失败会直接报错，不会回退为明文读取。
+
+### 恢复密钥
+
+跨设备备份使用独立恢复密钥：
+
+```text
+MPT2-RK1.<keyId>.<rootKey>
+```
+
+凭据和 TOTP 本地 JSON 使用 HKDF 进行用途隔离，并通过 AES-256-GCM 加密。AAD 会绑定格式、版本、数据类型、Key ID 和导出时间。
+
+> [!WARNING]
+> 恢复密钥无法从加密备份中反向找回。生成后请将密钥或 `.mpkey` 文件保存到可信位置，不要与公开分享的备份文件放在一起。
+
+### MoviePilot 与 WebDAV 快照
+
+远端快照采用以下结构：
+
+```text
+<snapshot-id>/
+├── manifest.json
+└── backup.mpt2
+```
+
+- `manifest.json` 保存非敏感元数据、Key ID、文件大小和 SHA-256。
+- `backup.mpt2` 保存加密后的逻辑数据和选中资产。
+- 支持替换恢复和合并恢复。
+- 恢复前校验大小、SHA-256 和加密完整性，提交失败时回滚原有数据与资产。
+- MoviePilot 大文件使用 256 KB 分片传输。
+- Token、当前会话、设备根密钥、运行时解锁态和缓存不会进入备份。
+
+---
+
+## 🎨 UI/UX 与移动端适配
+
+- **响应式布局**：桌面端使用侧边导航，窄屏设备自动切换为底部导航。
+- **深色主题**：应用壳、业务页面和 Element Plus 弹窗均适配深色模式。
+- **自定义背景**：支持毛玻璃、透明表面和背景参数调节。
+- **移动端文件选择器**：PC 使用隐藏文件输入框；移动端通过普通网页和 Shadow DOM 选择文件，再以分片方式回传到扩展。
+- **插件页保活**：MoviePilot 插件 iframe 首次加载后，在扩展内切换页面仍可保持运行状态。
 
 ---
 
 ## 📂 项目目录结构
 
 ```text
-MoviePilot-Tools/
-├── .github/                         # GitHub Actions 自动化工作流
-│   └── workflows/
-│       └── release.yml              # 自动编译发布工作流配置文件
-├── public/                          # 静态文件目录 (构建时会直接复制到 dist/)
-│   ├── icons/                       # 插件图标
-│   ├── ocr/                         # 本地离线 OCR 核心资源文件
-│   │   ├── charsets.json            # 验证码字符集映射
-│   │   ├── common.onnx              # 离线 OCR 轻量级神经网络模型
-│   │   ├── ort-wasm-simd-threaded.mjs # Wasm 运行加载胶水脚本
-│   │   └── ort-wasm-simd-threaded.wasm# Wasm 执行引擎
-│   └── manifest.json                # 扩展清单文件
-├── src/                             # 扩展源代码
-│   ├── background/                  # 后台运行脚本 (Service Worker)
-│   │   └── index.ts                 # Service Worker 核心业务逻辑
-│   ├── content/                     # 网页内容注入脚本 (Content Scripts)
-│   │   ├── captcha-auto-fill.ts     # 验证码自动获取识别并填充
-│   │   ├── mp-bridge.ts            # 与自建服务网页的桥接交互
-│   │   └── pt-float.ts             # 目标 PT 站内一键下载浮动按钮
-│   ├── offscreen/                   # 独立后台文档 (Offscreen Document)
-│   │   ├── ocr-worker.html
-│   │   └── ocr-worker.ts            # 用于运行 Wasm 离线 OCR 的 Worker 脚本
-│   ├── popup/                       # 扩展弹窗与侧边栏主应用 (Vue 3 / Element Plus)
-│   │   ├── components/              # 页面模块子组件 (侧边栏, 顶部栏, 下载列表)
-│   │   ├── views/                   # 核心视图面 (用户信息, 站点数据, 备份, 设置等)
-│   │   ├── App.vue                  # 弹窗根组件
-│   │   ├── index.html               # 弹窗 HTML 容器
-│   │   └── main.ts                  # 前端渲染挂载入口
-│   └── shared/                      # 多端共享及业务逻辑服务层
-│       ├── api/                     # 接口请求封装（鉴权、下载、插件等）
-│       ├── data/                    # 静态站点 Favicon 图标数据
-│       ├── stores/                  # 状态管理存储库
-│       └── utils/                   # 工具集（AES加密安全存储、图片渲染导出等）
-├── scripts/                         # 构建及辅助脚本
-│   ├── generate-icons.js            # 自定义尺寸图标生成脚本
-│   └── package-extension.js         # 打包同步构建脚本 (CRX / ZIP 打包打包)
-├── docs/                            # 项目文档
-│   └── PRIVACY_POLICY.md            # 中英双语隐私政策（应用商店提审必备）
-├── version.json                     # 全局单点版本控制与历史更新日志
-├── package.json                     # 项目配置与 NPM 依赖说明
-├── tsconfig.json                    # TypeScript 配置项
-└── vite.config.ts                   # Vite 现代化编译打包配置文件
+MoviePilot-Tools-2.0/
+├── components/                  # 应用壳与共享 Vue 组件
+├── content/                     # 网页注入、凭据/TOTP/OCR 与 iframe 桥接
+├── core/                        # 存储、加密、HTTP、消息、主题等基础设施
+├── entrypoints/                 # WXT Background、Content、Popup、Offscreen 入口
+│   ├── background.ts            # Runtime 消息、定时任务、OCR 与文件任务编排
+│   ├── content.ts               # Content Script 顶层与子框架分发
+│   ├── popup/                   # Vue 应用挂载入口
+│   └── offscreen/               # ONNX Runtime 推理入口
+├── services/                    # 认证、站点、下载、凭据、TOTP、OCR 与备份服务
+├── styles/                      # 全局样式、主题变量和 Element Plus 修正
+├── utils/                       # 无状态工具函数
+├── views/                       # 各功能页面
+├── public/                      # 扩展运行时静态文件与图标
+├── pack-assets/                 # OCR、站点图标等发布资源源文件
+├── scripts/                     # CRX、OCR、图标打包与质量检查脚本
+├── tests/                       # Vitest 单元与集成测试
+├── doc/                         # 架构、功能、专项设计与验收记录
+├── package.json                 # 项目依赖与脚本
+├── tsconfig.json                # TypeScript 严格模式配置
+├── vitest.config.ts             # Vitest 配置
+└── wxt.config.ts                # WXT、Manifest 与 Vite 构建配置
 ```
+
+生成目录 `.wxt/`、`.output/` 和 `release/` 均可重新构建。
 
 ---
 
 ## 🔧 开发与编译构建
 
-### 1. 开发环境要求
-- Node.js >= 18.0.0
-- npm >= 9.0.0
-- 支持 WebAssembly SIMD 的现代浏览器（如 Chrome >= 91, Edge >= 91）
+### 1. 开发环境
 
-### 2. 依赖安装
+建议使用当前 Node.js LTS 与 npm。
+
 ```bash
 npm install
 ```
 
-### 3. 本地编译构建
+### 2. 启动开发模式
+
 ```bash
-# 执行类型检查与构建，并自动生成 release 打包文件
+npm run dev
+```
+
+WXT 会生成开发扩展并监听源码变化。
+
+### 3. Chrome 生产构建
+
+```bash
 npm run build
 ```
 
+构建产物位于：
+
+```text
+.output/chrome-mv3/
+```
+
+在 Chrome 或 Chromium 浏览器中打开扩展管理页面，启用“开发者模式”，选择“加载已解压的扩展程序”，然后加载上述目录。
+
+### 4. 测试与质量检查
+
+```bash
+npm run test
+npm run lint
+npm run lint:comments
+npm run lint:deps
+```
+
+开发时持续运行测试：
+
+```bash
+npm run test:watch
+```
+
+### 5. 发布包
+
+```bash
+npm run zip
+npm run pack:crx
+```
+
+直接构建并生成 CRX：
+
+```bash
+npm run build:crx
+```
+
+CRX 签名私钥默认位于：
+
+```text
+keys/extension.pem
+```
+
+> [!IMPORTANT]
+> 更新 CRX 时必须复用相同私钥，否则 Chrome 会生成不同的扩展 ID。请勿提交、公开或丢失私钥。
+
+GitHub Actions 持续发布（推送到 `main` 且 `package.json` 版本变化时自动触发，或手动运行）：
+
+- 构建 Chrome MV3 产物，生成 `.zip` 与 `.crx`，同时打包外置资源（OCR 离线包、站点图标 HD 包）并一并上传至 GitHub Release。
+- 配置 `CRX_PRIVATE_KEY_2_0` 后可稳定复用扩展签名；未配置时会自动生成新私钥。
+- Edge Add-ons 发布改为手动触发：运行独立工作流「发布至 Edge Add-ons」并可选指定 Release 标签（需配置 `EDGE_CLIENT_ID`、`EDGE_API_KEY`、`EDGE_PRODUCT_ID`）。
+
+### 6. 外置资源打包
+
+```bash
+npm run pack:ocr
+npm run pack:icons
+```
+
+- `pack:ocr`：生成可由设置页导入的 OCR 离线资源包。
+- `pack:icons`：生成站点图标资源包。
+
+以上产物会随 GitHub Release 一并发布，可直接从 Release 附件下载，无需自行打包。
+
+### 支持的浏览器
+
+| 浏览器 | 产物 | 状态 |
+| --- | --- | --- |
+| Chrome | `.output/chrome-mv3/` | 完整支持（默认验收目标） |
+| Edge / Chromium 系（Brave、Opera、Vivaldi 等） | 可直接加载 Chrome 产物 | 预计可用 |
+| Firefox | `npm run build:firefox` | 保留构建入口，未完整验证 |
+
+已知差异：
+
+- 本地 OCR 依赖 Chrome 特有的 `offscreen` API，Firefox 上离线推理不可用，只能使用 MoviePilot OCR 或 AI 视觉服务。
+- Firefox 对 `cookies` 权限限制更严格，站点 Cookie/UA 同步和登录态判断需要更多用户授权。
+- Firefox 产物的 Manifest 版本与 CSP 字段可能与 Chrome 存在差异，使用前请实测验证。
+
 ---
 
-## 📦 版本控制与自动化构建
+## 🔑 扩展权限说明
 
-项目采用**单文件全局版本控制模式**以简化版本升级：
+| 权限 | 用途 |
+| --- | --- |
+| `storage` | 保存公共设置、加密信封、会话和任务状态 |
+| `cookies` | 读取、比较、覆盖和清理站点 Cookie |
+| `alarms` | Cookie/UA 更新、自动打开站点和自动备份任务 |
+| `scripting` | 执行受控页面脚本和扩展桥接 |
+| `activeTab` | 获取当前站点、二维码、凭据和下载上下文 |
+| `downloads` | 导出备份、图片和数据文件 |
+| `notifications` | 后台任务结果通知 |
+| `offscreen` | 在独立文档中执行本地 ONNX OCR |
+| `<all_urls>` | 连接用户自建 MoviePilot、PT 站点、WebDAV 和配置的服务地址 |
 
-1. **版本单点控制**：
-   在根目录的 [version.json](version.json) 中修改版本号（例如 `"version": "0.4.1"`) 并添加对应的更新说明 `"history"`。
-2. **自动同步注入**：
-   运行 `npm run build` 构建脚本时，系统会自动将 `version.json` 中的最新版本号写入并覆盖以下文件：
-   - `package.json` 中的 `"version"`
-   - `public/manifest.json` 中的 `"version"`
-   - 编译后输出的 `dist/manifest.json` 中的 `"version"`
-3. **自动生成 GitHub Release**：
-   项目配置了 GitHub Actions 工作流 [.github/workflows/release.yml](.github/workflows/release.yml)。当你向 GitHub 推送版本标签（如 `v0.4.1`）时，Actions 将在 `windows-latest` 云端环境下完成构建，并**自动提取 `version.json` 中写好的更新日志**，创建一个正式的 GitHub Release 并附带打包好的 `.zip` 和已签名的 `.crx` 发布文件。
+扩展页面 CSP 仅允许本扩展脚本及 WebAssembly 执行，不开放远程脚本和 `blob:` 脚本来源。
 
-> ℹ️ **私钥证书保护提示**：为了确保在 Action 自动构建时打包生成的 `.crx` 拥有相同的 Extension ID。请将你本地生成的签名私钥内容存入 GitHub 仓库的 **Secrets** 中，命名为 `CRX_PRIVATE_KEY`。
+---
+
+## 📦 资源与体积策略
+
+为控制主扩展包体积，以下资源不直接内置到发布包：
+
+- OCR ONNX 模型；
+- OCR 字符集和自定义词表；
+- ONNX Runtime WASM；
+- 站点高清图标包。
+
+构建只复制 ONNX Runtime 必需的 JavaScript 胶水文件。用户可在设置页导入离线 OCR 包和站点图标包，二进制内容保存到 IndexedDB。
+
+---
+
+## ⚠️ 使用说明
+
+1. 首次使用需要填写自己的 MoviePilot 地址、用户名、密码和可选 OTP。
+2. Cookie/UA 同步和站点登录状态判断依赖浏览器 Cookie 权限。
+3. 本地 OCR 需要先在设置页导入与模型匹配的离线资源包。
+4. MoviePilot 远端备份依赖服务端安装并启用 `moviepilot-tools` 插件；大文件分片能力需要对应插件版本支持。
+5. WebDAV 服务器必须允许扩展配置的地址执行目录、上传、下载和删除请求。
+6. Bitwarden 导入支持登录项中的凭据及 `login.totp`；无效 HOTP、无效 Base32 或无效 `otpauth` 配置会被跳过。
+7. 内网站点自动分类依据主机名和私有地址范围判断，用户仍可在凭据编辑页手动调整分组。
+8. 验证码 OCR 只读取当前页面显示的图片像素，不会二次请求验证码图片地址。
 
 ---
 
 ## 🔒 隐私政策
 
-为了符合各应用商店（如 Microsoft Edge 商店、Chrome Web Store）政策，项目的完整隐私政策文件已归档于：
-*   [docs/PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md) (中英文双语)
-
----
-
-## 🚀 更新说明
-
-### 当前最新版本：`v1.3.4`
-
-#### v1.3.4 (2026-06-26)
-- **【UI优化】** 优化PIN 锁屏页面在移动端时的显示样式，避免键盘遮挡。
-- **【UI优化】** 优化PIN 输入框无法自动聚焦问题。
-- **【事件监听器】** 修复事件监听器在部分站点干扰页面正常功能的问题，将该站点域名加入黑名单后不再进行监听。
-- **【Bug修复】** 修复加入黑名单的站点 登录时任然弹出凭据保存提示的问题。
-
-<details>
-<summary>历史版本更新日志</summary>
-
-#### v1.3.3 (2026-06-18)
-- **【UI优化】** 优化站点数据页面按钮布局样式。
-- **【UI优化】** 优化并修复插件管理页面内嵌页面的毛玻璃样式及加载遮罩闪烁问题。
-- **【Bug修复】** 修复下载页面列表存在N个下载时被挤压无法正常显示的问题。
-
-#### v1.3.2 (2026-06-14)
-- **【凭据管理】** 新增“黑名单”功能，添加到名单的站点不使用验证码识别或自动填充功能。
-- **【UI优化】** 优化部分页面UI样式适配深色主题。
-- **【Bug修复】** 修复自动获取自定义背景需在设置页面才能获取的问题。
-
-#### v1.3.0 (2026-06-09)
-- **【UI优化】** 优化部分页面UI样式、适配深色主题和自定义背景下的显示，重构页面加载阶段样式。
-- **【站点管理】** 优化站点管理页面过滤逻辑，新增「未登录」、「未添加」过滤条件，支持同时过滤多个状态。
-- **【WEB嵌入功能】** 优化种子详情页的悬浮图标样式。
-
-#### v1.2.0 (2026-06-07)
-- **【深色主题】** 新增主题设置（自动/浅色/深色），完整适配深色模式。
-- **【自定义背景】** 新增「从 MoviePilot 获取壁纸」功能，支持从壁纸列表选择背景图片。
-- **【自定义背景】** 新增「自动获取」开关，每天首次打开插件自动获取当日电影海报作为背景。
-- **【关于页面】** 新增 MoviePilot-Tools GitHub 项目链接。
-- **【上下文菜单】** 修复扩展更新/重载时重复创建菜单项导致的错误。
-- **【自定义背景】** 统计卡片、页面加载阶段、操作按钮适配毛玻璃透光效果。
-- **【清理】** 移除未使用的代码。
-- **【Bug修复】** 修复点击种子页面悬浮图标弹出下载页面失败的问题，改用 storage 传递路由。
-
-#### v1.1.0 (2026-06-06)
-- **【站点管理】** 页面 UI 重构：卡片布局优化，状态徽章带圆点指示器，差异标签样式统一。
-- **【站点管理】** 操作按钮（覆盖/更新/登录）移至左下角，更多菜单移至右下角。
-- **【站点管理】** 新增「禁用一键更新」功能，被禁用的站点不参与一键更新。
-- **【站点管理】** 新增「删除浏览器Cookie」功能，可快速清除站点浏览器Cookie。
-- **【站点管理】** 顶部新增「已适配」统计卡片，显示 MP 支持的站点总数。
-- **【站点管理】** 分割线改为虚线样式，按钮颜色减淡，移除重复的状态文字。
-- **【凭据管理】** 修复站点图标显示问题，从服务器 API 获取缺失的图标。
-- **【验证码识别】** 优化误触发问题，排除 favicon/图标/聊天输入框。
-- **【验证码识别】** 容器搜索范围缩小，避免匹配到页面其他区域的输入框。
-- **【两步验证】** 改进填充逻辑，非有效验证码值（如浏览器填充的密码）会被覆盖。
-- **【两步验证/凭据管理】** 新增分组功能，支持对密钥和凭据进行分类管理。
-- **【Bug修复】** 修复删除站点 API 路径错误（缺少 `/api/v1/` 前缀）。
-
-#### v1.0.0 (2026-06-05)
-- 首个正式版发布。
-
-</details>
+- [隐私政策](docs/PRIVACY_POLICY.md)：MoviePilot Tools 的数据收集、存储、第三方服务与联系说明。
 
 ---
 
 ## 📄 许可证
 
 本项目采用 **GPL-3.0 License** 许可证。详情请参阅 [LICENSE](LICENSE) 文件。
+
+---
+
+## 🚀 当前版本
+
+### `v2.0.0`
+
+- 使用 WXT、Vue 3、Element Plus 和 TypeScript 重构为 Chrome Manifest V3 扩展。
+- 完成站点管理、站点数据、下载管理、TOTP、凭据管理、插件管理、智能助手、用户信息和设置模块。
+- 建立 Public、Private、Device、Assets、Cache 五类存储边界及 IndexedDB 资产仓。
+- 敏感数据统一使用 Web Crypto 加密信封保存。
+- 完成恢复密钥、本地加密 JSON、MoviePilot 与 WebDAV 快照备份。
+- 完成本地 ONNX、MoviePilot OCR 和 AI 视觉三级验证码识别链。
+- 凭据管理支持 Bitwarden 登录凭据与 TOTP 导入，以及 PT站点、内网、自定义和用户自定义分组。
+
+---
+
+## 🙏 致谢
+
+- [MoviePilot](https://movie-pilot.org/)：提供完整的影视媒体自动化管理平台。
+- MoviePilot 社区及各 PT 站点适配贡献者。
+- Vue、WXT、Element Plus、ONNX Runtime Web 等开源项目。
+
+> [!NOTE]
+> 本项目包含 AI 辅助开发内容。欢迎通过 Issue 或 Pull Request 反馈功能问题、兼容性问题和改进建议。

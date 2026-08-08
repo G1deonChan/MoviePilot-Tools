@@ -1,0 +1,439 @@
+/* Element Plus 深色变量和常用组件修正。 */
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --el-color-primary: #3b82f6;
+  --el-color-primary-light-3: var(--mp-color-primary-soft);
+  --el-color-primary-light-5: #93c5fd;
+  --el-color-primary-light-7: #1d4ed8;
+  --el-color-primary-light-8: rgba(59, 130, 246, 0.18);
+  --el-color-primary-light-9: rgba(59, 130, 246, 0.12);
+  --el-color-primary-dark-2: #2563eb;
+  --el-color-success: #10b981;
+  --el-color-warning: #f59e0b;
+  --el-color-danger: #ef4444;
+  --el-color-error: #ef4444;
+  --el-color-info: var(--mp-color-text-muted);
+  --el-bg-color: var(--mp-color-surface);
+  --el-bg-color-page: var(--mp-color-bg);
+  --el-bg-color-overlay: var(--mp-color-surface);
+  --el-text-color-primary: var(--mp-color-text);
+  --el-text-color-regular: #cbd5e1;
+  --el-text-color-secondary: var(--mp-color-text-secondary);
+  --el-text-color-placeholder: var(--mp-color-text-muted);
+  --el-text-color-disabled: var(--mp-color-border-strong);
+  --el-border-color: var(--mp-color-border);
+  --el-border-color-light: var(--mp-color-border);
+  --el-border-color-lighter: var(--mp-color-surface);
+  --el-border-color-extra-light: var(--mp-color-surface);
+  --el-border-color-dark: var(--mp-color-border-strong);
+  --el-border-color-darker: var(--mp-color-text-muted);
+  --el-border-color-hover: var(--mp-color-border-strong);
+  --el-fill-color: var(--mp-color-border);
+  --el-fill-color-light: var(--mp-color-surface);
+  --el-fill-color-lighter: var(--mp-color-bg);
+  --el-fill-color-extra-light: #0b1220;
+  --el-fill-color-dark: var(--mp-color-border-strong);
+  --el-fill-color-darker: var(--mp-color-text-muted);
+  --el-fill-color-blank: var(--mp-color-bg);
+  --el-mask-color: rgba(15, 23, 42, 0.72);
+  --el-mask-color-extra-light: rgba(15, 23, 42, 0.35);
+  --el-box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --el-box-shadow-light: 0 4px 14px rgba(0, 0, 0, 0.28);
+  --el-box-shadow-lighter: 0 2px 8px rgba(0, 0, 0, 0.22);
+  --el-box-shadow-dark: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --el-disabled-bg-color: var(--mp-color-surface);
+  --el-disabled-text-color: var(--mp-color-border-strong);
+  --el-disabled-border-color: var(--mp-color-border);
+  --el-overlay-color: rgba(15, 23, 42, 0.72);
+  --el-overlay-color-light: rgba(15, 23, 42, 0.55);
+  --el-overlay-color-lighter: rgba(15, 23, 42, 0.35);
+  --el-svg-monochrome-grey: var(--mp-color-text-muted);
+  --el-input-bg-color: var(--mp-color-bg);
+  --el-input-text-color: var(--mp-color-text);
+  --el-input-border-color: var(--mp-color-border);
+  --el-input-hover-border-color: var(--mp-color-border-strong);
+  --el-input-focus-border-color: #3b82f6;
+  --el-input-placeholder-color: var(--mp-color-text-muted);
+  --el-dialog-bg-color: var(--mp-color-surface);
+  --el-popup-modal-bg-color: rgba(15, 23, 42, 0.72);
+  --el-dropdown-menuItem-hover-fill: rgba(255, 255, 255, 0.08);
+  --el-dropdown-menuItem-hover-color: var(--mp-color-primary-soft);
+  --el-switch-off-color: var(--mp-color-border-strong);
+  --el-switch-on-color: #3b82f6;
+  --el-skeleton-color: var(--mp-color-surface);
+  --el-skeleton-to-color: var(--mp-color-border);
+}
+
+html[data-theme='dark'] .el-card {
+  --el-card-bg-color: var(--mp-color-surface);
+  background: var(--mp-color-surface);
+  border-color: var(--mp-color-border);
+  color: var(--mp-color-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme='dark'] .el-form-item__label { color: var(--mp-color-text-secondary); }
+
+html[data-theme='dark'] .el-input__wrapper,
+html[data-theme='dark'] .el-textarea__inner,
+html[data-theme='dark'] .el-select__wrapper {
+  background-color: var(--mp-color-bg) !important;
+  box-shadow: 0 0 0 1px var(--mp-color-border) inset !important;
+}
+html[data-theme='dark'] .el-input__wrapper:hover,
+html[data-theme='dark'] .el-input__wrapper.is-focus,
+html[data-theme='dark'] .el-textarea__inner:hover,
+html[data-theme='dark'] .el-textarea__inner:focus,
+html[data-theme='dark'] .el-select__wrapper.is-hovering,
+html[data-theme='dark'] .el-select__wrapper.is-focused {
+  box-shadow: 0 0 0 1px var(--mp-color-border-strong) inset !important;
+}
+html[data-theme='dark'] .el-input__inner,
+html[data-theme='dark'] .el-textarea__inner,
+html[data-theme='dark'] .el-select__placeholder,
+html[data-theme='dark'] .el-select__selected-item { color: var(--mp-color-text) !important; }
+html[data-theme='dark'] .el-input__inner::placeholder,
+html[data-theme='dark'] .el-textarea__inner::placeholder { color: var(--mp-color-text-muted) !important; }
+
+html[data-theme='dark'] input:-webkit-autofill,
+html[data-theme='dark'] input:-webkit-autofill:hover,
+html[data-theme='dark'] input:-webkit-autofill:focus,
+html[data-theme='dark'] textarea:-webkit-autofill,
+html[data-theme='dark'] textarea:-webkit-autofill:hover,
+html[data-theme='dark'] textarea:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--mp-color-text) !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--mp-color-bg) inset !important;
+  transition: background-color 5000s ease-in-out 0s !important;
+}
+
+html[data-theme='dark'] .el-input-group__append,
+html[data-theme='dark'] .el-input-group__prepend {
+  background-color: var(--mp-color-surface) !important;
+  color: #cbd5e1 !important;
+  box-shadow: 0 0 0 1px var(--mp-color-border) inset !important;
+  border: none !important;
+}
+html[data-theme='dark'] .el-input-group__append .el-button,
+html[data-theme='dark'] .el-input-group__prepend .el-button {
+  background: transparent !important;
+  border: none !important;
+  color: inherit !important;
+  margin: 0 !important;
+}
+html[data-theme='dark'] .el-input-group__append .el-button:hover,
+html[data-theme='dark'] .el-input-group__prepend .el-button:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--mp-color-primary-soft) !important;
+}
+
+html[data-theme='dark'] .el-input-number__decrease,
+html[data-theme='dark'] .el-input-number__increase {
+  background: var(--mp-color-surface) !important;
+  border-color: var(--mp-color-border) !important;
+  color: #cbd5e1 !important;
+}
+/* 仅可点击时才高亮；禁用态不套 hover 亮色 */
+html[data-theme='dark'] .el-input-number__decrease:hover:not(.is-disabled),
+html[data-theme='dark'] .el-input-number__increase:hover:not(.is-disabled) {
+  background: var(--mp-color-border) !important;
+  color: var(--mp-color-primary-soft) !important;
+}
+html[data-theme='dark'] .el-input-number__decrease.is-disabled,
+html[data-theme='dark'] .el-input-number__increase.is-disabled,
+html[data-theme='dark'] .el-input-number__decrease.is-disabled:hover,
+html[data-theme='dark'] .el-input-number__increase.is-disabled:hover,
+html[data-theme='dark'] .el-input-number.is-disabled .el-input-number__decrease,
+html[data-theme='dark'] .el-input-number.is-disabled .el-input-number__increase,
+html[data-theme='dark'] .el-input-number.is-disabled .el-input-number__decrease:hover,
+html[data-theme='dark'] .el-input-number.is-disabled .el-input-number__increase:hover {
+  background: var(--mp-color-bg) !important;
+  color: var(--mp-color-border-strong) !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
+}
+html[data-theme='dark'] .el-input-number__decrease.is-disabled .el-icon,
+html[data-theme='dark'] .el-input-number__increase.is-disabled .el-icon,
+html[data-theme='dark'] .el-input-number__decrease.is-disabled svg,
+html[data-theme='dark'] .el-input-number__increase.is-disabled svg,
+html[data-theme='dark'] .el-input-number.is-disabled .el-input-number__decrease .el-icon,
+html[data-theme='dark'] .el-input-number.is-disabled .el-input-number__increase .el-icon,
+html[data-theme='dark'] .el-input-number.is-disabled .el-input-number__decrease svg,
+html[data-theme='dark'] .el-input-number.is-disabled .el-input-number__increase svg {
+  color: var(--mp-color-border-strong) !important;
+  fill: currentColor !important;
+}
+
+html[data-theme='dark'] .el-button {
+  --el-button-bg-color: var(--mp-color-surface);
+  --el-button-text-color: #cbd5e1;
+  --el-button-border-color: var(--mp-color-border);
+  --el-button-hover-bg-color: var(--mp-color-border);
+  --el-button-hover-text-color: var(--mp-color-text);
+  --el-button-hover-border-color: var(--mp-color-border-strong);
+  --el-button-active-bg-color: var(--mp-color-border);
+  --el-button-active-text-color: var(--mp-color-text);
+  --el-button-active-border-color: var(--mp-color-border-strong);
+  --el-button-disabled-bg-color: var(--mp-color-surface);
+  --el-button-disabled-text-color: var(--mp-color-border-strong);
+  --el-button-disabled-border-color: var(--mp-color-border);
+}
+html[data-theme='dark'] .el-button--primary {
+  --el-button-bg-color: #2563eb;
+  --el-button-border-color: #2563eb;
+  --el-button-text-color: #ffffff;
+  --el-button-hover-bg-color: #1d4ed8;
+  --el-button-hover-border-color: #1d4ed8;
+  --el-button-hover-text-color: #ffffff;
+  --el-button-active-bg-color: #1d4ed8;
+  --el-button-active-border-color: #1d4ed8;
+}
+html[data-theme='dark'] .el-button--success {
+  --el-button-bg-color: #10b981;
+  --el-button-border-color: #10b981;
+  --el-button-text-color: #ffffff;
+  --el-button-hover-bg-color: #059669;
+  --el-button-hover-border-color: #059669;
+  --el-button-hover-text-color: #ffffff;
+}
+html[data-theme='dark'] .el-button--warning {
+  --el-button-bg-color: #f59e0b;
+  --el-button-border-color: #f59e0b;
+  --el-button-text-color: #ffffff;
+  --el-button-hover-bg-color: #d97706;
+  --el-button-hover-border-color: #d97706;
+  --el-button-hover-text-color: #ffffff;
+}
+html[data-theme='dark'] .el-button--danger {
+  --el-button-bg-color: #ef4444;
+  --el-button-border-color: #ef4444;
+  --el-button-text-color: #ffffff;
+  --el-button-hover-bg-color: #dc2626;
+  --el-button-hover-border-color: #dc2626;
+  --el-button-hover-text-color: #ffffff;
+}
+html[data-theme='dark'] .el-button.is-plain,
+html[data-theme='dark'] .el-button.is-text,
+html[data-theme='dark'] .el-button.is-link {
+  --el-button-bg-color: transparent;
+  --el-button-border-color: var(--mp-color-border);
+  --el-button-text-color: #cbd5e1;
+  --el-button-hover-bg-color: rgba(255, 255, 255, 0.06);
+  --el-button-hover-text-color: var(--mp-color-text);
+}
+html[data-theme='dark'] .el-button.is-text,
+html[data-theme='dark'] .el-button.is-link { --el-button-border-color: transparent; }
+
+html[data-theme='dark'] .el-switch__core { border-color: var(--mp-color-border-strong); background: var(--mp-color-border-strong); }
+html[data-theme='dark'] .el-switch.is-checked .el-switch__core { border-color: #3b82f6; background: #3b82f6; }
+html[data-theme='dark'] .el-radio__label,
+html[data-theme='dark'] .el-checkbox__label { color: #cbd5e1; }
+html[data-theme='dark'] .el-radio-button__inner {
+  background: var(--mp-color-surface);
+  border-color: var(--mp-color-border);
+  color: #cbd5e1;
+  box-shadow: none !important;
+}
+html[data-theme='dark'] .el-radio-button__original-radio:checked + .el-radio-button__inner {
+  background: rgba(59, 130, 246, 0.18);
+  border-color: rgba(59, 130, 246, 0.45);
+  color: var(--mp-color-primary-soft);
+}
+html[data-theme='dark'] .el-slider__runway { background-color: var(--mp-color-border); }
+html[data-theme='dark'] .el-slider__bar { background-color: #3b82f6; }
+html[data-theme='dark'] .el-slider__button { border-color: #3b82f6; background: var(--mp-color-bg); }
+
+html[data-theme='dark'] .el-dropdown-menu,
+html[data-theme='dark'] .el-select-dropdown,
+html[data-theme='dark'] .el-popper.is-light,
+html[data-theme='dark'] .el-popper.is-pure {
+  background: var(--mp-color-surface) !important;
+  border-color: var(--mp-color-border) !important;
+  color: var(--mp-color-text) !important;
+}
+html[data-theme='dark'] .el-popper.is-light .el-popper__arrow::before,
+html[data-theme='dark'] .el-popper.is-pure .el-popper__arrow::before {
+  background: var(--mp-color-surface) !important;
+  border-color: var(--mp-color-border) !important;
+}
+html[data-theme='dark'] .el-dropdown-menu__item { color: #cbd5e1 !important; }
+html[data-theme='dark'] .el-dropdown-menu__item:not(.is-disabled):hover,
+html[data-theme='dark'] .el-dropdown-menu__item:not(.is-disabled):focus {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--mp-color-primary-soft) !important;
+}
+html[data-theme='dark'] .el-dropdown-menu__item.is-disabled { color: var(--mp-color-border-strong) !important; }
+html[data-theme='dark'] .el-dropdown-menu__item--divided { border-top-color: var(--mp-color-border) !important; }
+html[data-theme='dark'] .el-dropdown-menu__item--divided::before { background-color: var(--mp-color-border) !important; }
+html[data-theme='dark'] .el-select-dropdown__item { color: #cbd5e1 !important; }
+html[data-theme='dark'] .el-select-dropdown__item.is-hovering {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--mp-color-primary-soft) !important;
+}
+html[data-theme='dark'] .el-select-dropdown__item.is-selected {
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: var(--mp-color-primary-soft) !important;
+  font-weight: 600;
+}
+
+html[data-theme='dark'] .el-dialog,
+html[data-theme='dark'] .el-overlay-dialog .el-dialog {
+  --el-dialog-bg-color: var(--mp-color-surface);
+  background: var(--mp-color-surface) !important;
+  border: 1px solid var(--mp-color-border);
+}
+html[data-theme='dark'] .el-dialog__title,
+html[data-theme='dark'] .el-dialog__body { color: var(--mp-color-text) !important; }
+html[data-theme='dark'] .el-dialog__headerbtn .el-dialog__close { color: var(--mp-color-text-secondary); }
+html[data-theme='dark'] .el-overlay { background-color: rgba(15, 23, 42, 0.72) !important; }
+
+/*
+ * Toast / ElMessage：按类型恢复语义色。
+ * 禁止再统一写死 .el-message__content { color: var(--mp-color-text) }，
+ * 否则 success/error/warning 文字会全部变成“灰色”。
+ * EP 本体：.el-message--{type} 设置 --el-message-text-color，
+ * content/icon 均读取该变量。
+ */
+html[data-theme='dark'] .el-message {
+  --el-message-bg-color: var(--mp-color-surface);
+  --el-message-border-color: var(--mp-color-border);
+  --el-message-text-color: var(--mp-color-text);
+  --el-message-close-icon-color: var(--mp-color-text-secondary);
+  --el-message-close-hover-color: var(--mp-color-text);
+  background-color: var(--el-message-bg-color) !important;
+  border-color: var(--el-message-border-color) !important;
+  color: var(--el-message-text-color);
+}
+html[data-theme='dark'] .el-message__content {
+  color: var(--el-message-text-color) !important;
+}
+html[data-theme='dark'] .el-message .el-message__closeBtn {
+  color: var(--el-message-close-icon-color);
+}
+html[data-theme='dark'] .el-message .el-message__closeBtn:hover {
+  color: var(--el-message-close-hover-color);
+}
+
+html[data-theme='dark'] .el-message--primary {
+  --el-message-bg-color: rgba(59, 130, 246, 0.14);
+  --el-message-border-color: rgba(59, 130, 246, 0.32);
+  --el-message-text-color: var(--mp-color-primary-soft);
+}
+html[data-theme='dark'] .el-message--success {
+  --el-message-bg-color: rgba(16, 185, 129, 0.14);
+  --el-message-border-color: rgba(16, 185, 129, 0.32);
+  --el-message-text-color: var(--mp-color-success);
+}
+html[data-theme='dark'] .el-message--warning {
+  --el-message-bg-color: rgba(245, 158, 11, 0.14);
+  --el-message-border-color: rgba(245, 158, 11, 0.32);
+  --el-message-text-color: var(--mp-color-warning);
+}
+html[data-theme='dark'] .el-message--error {
+  --el-message-bg-color: rgba(239, 68, 68, 0.14);
+  --el-message-border-color: rgba(239, 68, 68, 0.32);
+  --el-message-text-color: var(--mp-color-danger);
+}
+/* info：全局 --el-color-info 是 var(--mp-color-text-muted)，暗色 toast 下过灰，改用更亮的次要文字色 */
+html[data-theme='dark'] .el-message--info {
+  --el-message-bg-color: rgba(148, 163, 184, 0.12);
+  --el-message-border-color: rgba(148, 163, 184, 0.28);
+  --el-message-text-color: var(--mp-color-text);
+}
+html[data-theme='dark'] .el-message.is-plain {
+  --el-message-bg-color: var(--mp-color-surface);
+  --el-message-border-color: var(--mp-color-border);
+  --el-message-text-color: var(--mp-color-text);
+  background-color: var(--el-message-bg-color) !important;
+  border-color: var(--el-message-border-color) !important;
+  box-shadow: var(--el-box-shadow-light);
+}
+
+html[data-theme='dark'] .el-notification {
+  background: var(--mp-color-surface) !important;
+  border-color: var(--mp-color-border) !important;
+  color: var(--mp-color-text);
+}
+html[data-theme='dark'] .el-notification__title { color: var(--mp-color-text-strong) !important; }
+html[data-theme='dark'] .el-notification__content { color: #cbd5e1 !important; }
+html[data-theme='dark'] .el-notification .el-notification--success {
+  color: var(--mp-color-success) !important;
+}
+html[data-theme='dark'] .el-notification .el-notification--warning {
+  color: var(--mp-color-warning) !important;
+}
+html[data-theme='dark'] .el-notification .el-notification--error {
+  color: var(--mp-color-danger) !important;
+}
+html[data-theme='dark'] .el-notification .el-notification--info {
+  color: var(--mp-color-text-secondary) !important;
+}
+
+html[data-theme='dark'] .el-alert {
+  background: rgba(51, 65, 85, 0.55);
+  border-color: var(--mp-color-border);
+  color: var(--mp-color-text);
+}
+html[data-theme='dark'] .el-alert--info {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.28);
+}
+html[data-theme='dark'] .el-alert--success {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.28);
+}
+html[data-theme='dark'] .el-alert--warning {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.28);
+}
+html[data-theme='dark'] .el-alert--error {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.28);
+}
+html[data-theme='dark'] .el-alert__title,
+html[data-theme='dark'] .el-alert__description { color: inherit; }
+
+html[data-theme='dark'] .el-tag {
+  --el-tag-bg-color: rgba(51, 65, 85, 0.7);
+  --el-tag-border-color: var(--mp-color-border);
+  --el-tag-text-color: #cbd5e1;
+}
+html[data-theme='dark'] .el-progress-bar__outer { background-color: var(--mp-color-border) !important; }
+html[data-theme='dark'] .el-empty__description p { color: var(--mp-color-text-muted) !important; }
+html[data-theme='dark'] .el-empty__image svg {
+  filter: invert(0.9) hue-rotate(180deg) brightness(0.75) contrast(0.9);
+  opacity: 0.7;
+}
+html[data-theme='dark'] .el-skeleton {
+  --el-skeleton-color: var(--mp-color-surface);
+  --el-skeleton-to-color: var(--mp-color-border);
+}
+html[data-theme='dark'] .el-skeleton__item { background: var(--mp-color-surface); }
+html[data-theme='dark'] .el-loading-mask { background-color: rgba(15, 23, 42, 0.72) !important; }
+html[data-theme='dark'] .el-loading-spinner .path { stroke: var(--mp-color-primary-soft) !important; }
+html[data-theme='dark'] .el-loading-spinner .el-loading-text { color: var(--mp-color-primary-soft) !important; }
+html[data-theme='dark'] .el-result__title { color: var(--mp-color-text); }
+html[data-theme='dark'] .el-result__subtitle { color: var(--mp-color-text-secondary); }
+
+html[data-theme='dark'] .el-tabs__item { color: var(--mp-color-text-secondary); }
+html[data-theme='dark'] .el-tabs__item.is-active,
+html[data-theme='dark'] .el-tabs__item:hover { color: var(--mp-color-primary-soft); }
+html[data-theme='dark'] .el-tabs__nav-wrap::after { background-color: var(--mp-color-border); }
+html[data-theme='dark'] .el-tabs__active-bar { background-color: var(--mp-color-primary-soft); }
+html[data-theme='dark'] .el-divider { border-color: var(--mp-color-border); }
+html[data-theme='dark'] .el-checkbox__inner,
+html[data-theme='dark'] .el-radio__inner {
+  background: var(--mp-color-bg);
+  border-color: var(--mp-color-border-strong);
+}
+html[data-theme='dark'] .el-checkbox__input.is-checked .el-checkbox__inner,
+html[data-theme='dark'] .el-radio__input.is-checked .el-radio__inner {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+/* 必填星号：不被 label 字色覆盖 */
+html[data-theme='dark'] .el-form-item.is-required:not(.is-no-asterisk).asterisk-left > .el-form-item__label::before,
+html[data-theme='dark'] .el-form-item.is-required:not(.is-no-asterisk).asterisk-left > .el-form-item__label-wrap > .el-form-item__label::before,
+html[data-theme='dark'] .el-form-item.is-required:not(.is-no-asterisk).asterisk-right > .el-form-item__label::after,
+html[data-theme='dark'] .el-form-item.is-required:not(.is-no-asterisk).asterisk-right > .el-form-item__label-wrap > .el-form-item__label::after {
+  color: var(--el-color-danger, #ef4444) !important;
+}

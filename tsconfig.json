@@ -1,16 +1,23 @@
 {
+  "extends": "./.wxt/tsconfig.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022", "DOM"],
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
     "strict": true,
-    "jsx": "preserve",
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "types": ["chrome"]
+    "moduleResolution": "Bundler",
+    "verbatimModuleSyntax": false,
+    "ignoreDeprecations": "5.0",
+    "types": ["chrome", "node"],
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "entrypoints/**/*",
+    "components/**/*",
+    "views/**/*",
+    "services/**/*",
+    "core/**/*",
+    "utils/**/*",
+    "types/**/*",
+    "*.ts"
+  ]
 }

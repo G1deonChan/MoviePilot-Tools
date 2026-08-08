@@ -1,0 +1,118 @@
+* {
+  box-sizing: border-box;
+}
+/* Chromium 滚动条宽 4px，不设置按钮和 Firefox 专用属性。 */
+*::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--mp-scrollbar-thumb);
+  border-radius: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: var(--mp-scrollbar-track);
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+  /* 固定 popup 窗口尺寸 */
+  width: 420px;
+  height: 540px;
+  overflow: hidden;
+}
+/*
+ * Element Plus 弹窗/MessageBox 默认 lock-scroll：
+ * - class 加在 html 上
+ * - 同时给 body 写 inline width: calc(100% - 滚动条宽)
+ * 扩展 popup 固定 420×540 且 overflow:hidden，该补偿会让整页左缩一个滚动条位。
+ * 注意：必须用 `html.el-popup-parent--hidden body`，仅 body.xxx 匹配不到。
+ */
+html.el-popup-parent--hidden,
+html.el-popup-parent--hidden body,
+body.el-popup-parent--hidden {
+  width: 420px !important;
+  max-width: 420px !important;
+  overflow: hidden !important;
+  padding-right: 0 !important;
+  margin-right: 0 !important;
+}
+#app {
+  width: 100%;
+  height: 100%;
+}
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  color: var(--mp-color-text);
+  background-color: var(--mp-color-bg);
+}
+
+/* 深色页面基底使用 #0f172a 背景和 #e2e8f0 主文字。 */
+html[data-theme='dark'],
+html[data-theme='dark'] body {
+  color: #e2e8f0;
+  background-color: #0f172a;
+}
+
+html[data-theme='dark'] #app {
+  color: #e2e8f0;
+  background-color: #0f172a;
+}
+
+/* 主内容区文字继承（避免子页面硬编码浅色字在暗底不可读） */
+html[data-theme='dark'] .mp-content,
+html[data-theme='dark'] .mp-view {
+  color: #e2e8f0;
+}
+/*
+ * 自定义背景的透明表面由 `styles/theme/custom-bg.css` 统一处理。
+ * 此处仅保留最小透明，避免与 custom-bg 重复/冲突。
+ */
+html.has-custom-bg-body,
+body.has-custom-bg-body,
+.has-custom-bg-body #app {
+  background: transparent !important;
+}
+a {
+  color: var(--mp-color-primary);
+  text-decoration: none;
+}
+
+/*
+ * 深色主题图标：MDI 填充路径在暗底上若叠 stroke / 抗锯齿，会看起来“描边加粗”。
+ * 仅处理无 stroke 属性的 path；保留 loading / progress / 显式 stroke 图标。
+ */
+html[data-theme='dark'] svg {
+  shape-rendering: geometricPrecision;
+}
+
+html[data-theme='dark'] svg path:not([stroke]):not(.path) {
+  stroke: none !important;
+  stroke-width: 0 !important;
+  paint-order: normal;
+}
+
+/* 无显式 fill 的 path 继承 currentColor（SVG 默认 fill 为黑，暗底上会发黑） */
+html[data-theme='dark'] svg path:not([stroke]):not([fill]):not(.path) {
+  fill: currentColor;
+}
+
+/* Element Plus 图标组件：避免 fill+stroke 双绘 */
+html[data-theme='dark'] .el-icon {
+  color: inherit;
+}
+
+html[data-theme='dark'] .el-icon svg {
+  fill: currentColor;
+  color: inherit;
+}
+
+html[data-theme='dark'] .el-icon svg path:not([stroke]) {
+  fill: currentColor;
+  stroke: none !important;
+  stroke-width: 0 !important;
+}

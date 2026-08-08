@@ -1,0 +1,1827 @@
+/*
+ * 自定义背景玻璃态（仅浅色生效；深色主题 isBgActive=false）
+ * 自定义背景模式的全局表面规则：
+ * - 背景层 inset:0 + filter blur + scale(1.08)
+ * - 根容器 / body 透明，由 .custom-bg-layer 绘制
+ * - 侧栏/顶栏/卡片半透明毛玻璃
+ * 注意：不在底层再铺一张「清晰原图」，否则模糊层会看不出来。
+ */
+
+/* 根节点透明表面 */
+html.has-custom-bg-body,
+body.has-custom-bg-body,
+.has-custom-bg-body #app {
+  background: transparent !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  /* 固定 popup 尺寸，避免切换时宽度抖动（不改变可视内容区） */
+  width: 420px !important;
+  height: 540px !important;
+  overflow: hidden !important;
+}
+
+.has-custom-bg-body #app {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* AppShell 根节点与背景层 */
+.mp-app.has-custom-bg {
+  position: relative;
+  background: transparent !important;
+  /* 不要 overflow:hidden + 底层实图：会裁切 scale 视觉并盖住模糊 */
+  overflow: visible !important;
+  /*
+   * 根节点必须清除玻璃描边。
+   * `PinUnlockView` 的 scoped `:global(.mp-app.has-custom-bg) .pin-lock-card` 会将根选择器
+   * 编译为独立的 `.mp-app.has-custom-bg` 规则，因此此处使用全局高优先级规则限制其边框、阴影和滤镜。
+   */
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* 冷色遮罩保持低亮度，避免形成浅色边框。 */
+.mp-app.has-custom-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(246, 249, 255, 0.15);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.mp-app.has-custom-bg > .custom-bg-layer {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  pointer-events: none !important;
+  /* 模糊与缩放由 inline style 控制 */
+  transition:
+    opacity 0.3s ease,
+    filter 0.3s ease,
+    transform 0.3s ease;
+}
+
+.mp-app.has-custom-bg > :not(.custom-bg-layer) {
+  position: relative;
+  z-index: 1;
+}
+
+/* 主内容区透明，透出背景层 */
+.mp-app.has-custom-bg .mp-content {
+  background: transparent !important;
+}
+
+/* 侧栏与顶栏玻璃表面 */
+.mp-app.has-custom-bg .sidebar {
+  background: rgba(255, 255, 255, 0.18) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  backdrop-filter: blur(16px) saturate(120%);
+  border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.mp-app.has-custom-bg .sidebar .item {
+  background: transparent !important;
+  border: none !important;
+}
+
+.mp-app.has-custom-bg .sidebar .item:hover,
+.mp-app.has-custom-bg .sidebar .item.active {
+  background: transparent !important;
+}
+
+.mp-app.has-custom-bg .sidebar .item.active {
+  color: #1677ff !important;
+}
+
+.mp-app.has-custom-bg .sidebar .item.active svg,
+.mp-app.has-custom-bg .sidebar .item.active svg path {
+  color: #1677ff !important;
+  fill: currentColor !important;
+}
+
+/* 固定工具区玻璃表面 */
+.mp-app.has-custom-bg .topbar,
+.mp-app.has-custom-bg .toolbar,
+.mp-app.has-custom-bg .pt-manager-root .toolbar,
+.mp-app.has-custom-bg .totp-manager .toolbar,
+.mp-app.has-custom-bg .download-manager .toolbar,
+.mp-app.has-custom-bg .download-manager .action-bar,
+.mp-app.has-custom-bg .site-manage .toolbar,
+.mp-app.has-custom-bg .site-manage .sm-toolbar,
+.mp-app.has-custom-bg .pt-tabs,
+.mp-app.has-custom-bg .totp-tabs {
+  background: rgba(255, 255, 255, 0.28) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(120%) !important;
+  backdrop-filter: blur(14px) saturate(120%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: none !important;
+  /* 配合页面内部滚动：顶部条不进入列表滚动区 */
+  flex-shrink: 0 !important;
+}
+
+/* 站点管理筛选工具栏：卡片式边框，保留圆角 */
+.mp-app.has-custom-bg .site-manage .sm-toolbar {
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.28) !important;
+  background: rgba(255, 255, 255, 0.32) !important;
+}
+
+/* 顶栏略实一点，层次更清晰 */
+.mp-app.has-custom-bg .topbar {
+  background: rgba(255, 255, 255, 0.32) !important;
+}
+
+/* 选项卡：与上方工具栏连成一体，弱化分割线 */
+.mp-app.has-custom-bg .pt-tabs,
+.mp-app.has-custom-bg .totp-tabs {
+  background: rgba(255, 255, 255, 0.22) !important;
+  border-top: none !important;
+}
+
+/* 工具栏内搜索框 / 下拉半透明，避免白块打断毛玻璃 */
+.mp-app.has-custom-bg .toolbar .search-input .el-input__wrapper,
+.mp-app.has-custom-bg .toolbar .el-input__wrapper,
+.mp-app.has-custom-bg .toolbar .el-select__wrapper,
+.mp-app.has-custom-bg .site-manage .sm-search-input .el-input__wrapper {
+  background: rgba(255, 255, 255, 0.45) !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35) inset !important;
+}
+
+/* 默认 compact 按钮半透明（排序/更多等）；添加按钮单独保留语义色 */
+.mp-app.has-custom-bg .toolbar .compact:not(.add-button):not(.el-button--primary):not(.el-button--success):not(.el-button--danger):not(.el-button--warning),
+.mp-app.has-custom-bg .toolbar .compact.sort-button,
+.mp-app.has-custom-bg .toolbar .compact.more-button {
+  background: rgba(255, 255, 255, 0.52) !important;
+  border-color: rgba(255, 255, 255, 0.42) !important;
+  color: #334155 !important;
+}
+
+.mp-app.has-custom-bg .toolbar .compact.sort-button:hover,
+.mp-app.has-custom-bg .toolbar .compact.more-button:hover {
+  background: rgba(255, 255, 255, 0.72) !important;
+  border-color: rgba(255, 255, 255, 0.55) !important;
+  color: #0f172a !important;
+}
+
+/* 两步验证「+」：半透明主色蓝（覆盖 scoped 实色） */
+.mp-app.has-custom-bg .totp-manager .toolbar .compact.add-button,
+.mp-app.has-custom-bg .totp-manager .toolbar .compact.el-button--primary {
+  background: rgba(22, 119, 255, 0.82) !important;
+  border-color: rgba(22, 119, 255, 0.55) !important;
+  color: #ffffff !important;
+}
+
+/* 凭据管理「+」：半透明绿色 */
+.mp-app.has-custom-bg .pt-manager-root .toolbar .compact.add-button,
+.mp-app.has-custom-bg .pt-manager-root .toolbar .compact.el-button--primary {
+  background: rgba(22, 163, 74, 0.82) !important;
+  border-color: rgba(22, 163, 74, 0.55) !important;
+  color: #ffffff !important;
+}
+
+/* 其它页 primary / success compact 兜底 */
+.mp-app.has-custom-bg .toolbar .compact.el-button--primary:not(.add-button) {
+  background: rgba(59, 130, 246, 0.82) !important;
+  border-color: rgba(59, 130, 246, 0.55) !important;
+}
+
+.mp-app.has-custom-bg .toolbar .compact.el-button--success {
+  background: rgba(16, 185, 129, 0.82) !important;
+  border-color: rgba(16, 185, 129, 0.55) !important;
+}
+
+/* 搜索框聚焦时仍保持半透明，避免跳回实白 */
+.mp-app.has-custom-bg .toolbar .search-input .el-input__wrapper.is-focus,
+.mp-app.has-custom-bg .toolbar .el-input__wrapper.is-focus,
+.mp-app.has-custom-bg .site-manage .sm-search-input .el-input__wrapper.is-focus {
+  background: rgba(255, 255, 255, 0.58) !important;
+}
+
+/* 页面根容器透明表面 */
+.mp-app.has-custom-bg .settings-root,
+.mp-app.has-custom-bg .user-root,
+.mp-app.has-custom-bg .sites-root,
+.mp-app.has-custom-bg .site-manage,
+.mp-app.has-custom-bg .pt-manager-root,
+.mp-app.has-custom-bg .totp-manager,
+.mp-app.has-custom-bg .download-manager,
+.mp-app.has-custom-bg .pl-iframe-wrap,
+.mp-app.has-custom-bg .agent-root,
+.mp-app.has-custom-bg .about-root,
+.mp-app.has-custom-bg .pin-lock-page,
+.mp-app.has-custom-bg .mp-login,
+.mp-app.has-custom-bg .stats-panel,
+.mp-app.has-custom-bg .comprehensive-info {
+  background: transparent !important;
+}
+
+/* 智能助手：悬浮玻璃条（header / 历史 / 输入），避免与 TopBar 叠成「双标题」厚重感 */
+.mp-app.has-custom-bg .agent-root {
+  background: transparent !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-header {
+  background: rgba(255, 255, 255, 0.38) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(120%) !important;
+  backdrop-filter: blur(14px) saturate(120%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.34) !important;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05) !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-history {
+  background: rgba(255, 255, 255, 0.32) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(110%);
+  backdrop-filter: blur(12px) saturate(110%);
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* 空状态：中间图标不铺玻璃底/描边，仅保留图标本身 */
+.mp-app.has-custom-bg .agent-root .agent-empty__mark {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  color: #7c3aed !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-empty__title {
+  color: rgba(15, 23, 42, 0.92) !important;
+  text-shadow: none !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-empty__subtitle {
+  color: rgba(30, 41, 59, 0.78) !important;
+  text-shadow: none !important;
+}
+
+/* 检查可用性：无白底卡片，透出自定义背景 */
+.mp-app.has-custom-bg .agent-root .agent-state-loading__title {
+  color: rgba(15, 23, 42, 0.92) !important;
+  text-shadow: none !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-state-loading__desc {
+  color: rgba(30, 41, 59, 0.72) !important;
+  text-shadow: none !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-state-spinner {
+  border-color: rgba(124, 58, 237, 0.22) !important;
+  border-top-color: #7c3aed !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-state-card:not(.agent-state-card--warn) {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: rgba(30, 41, 59, 0.78) !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-state-card--warn {
+  background: rgba(255, 251, 235, 0.72) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(110%);
+  backdrop-filter: blur(10px) saturate(110%);
+  border-color: rgba(253, 230, 138, 0.7) !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-title__status {
+  color: rgba(30, 41, 59, 0.78) !important;
+}
+
+/* 消息角色头像/「我」「助手」与工具行：加深颜色，避免落在背景图上发虚 */
+.mp-app.has-custom-bg .agent-root .agent-message__meta {
+  color: rgba(15, 23, 42, 0.82) !important;
+  font-weight: 600;
+  text-shadow: none !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-message__meta svg,
+.mp-app.has-custom-bg .agent-root .agent-message__meta path {
+  color: rgba(15, 23, 42, 0.78) !important;
+  fill: currentColor !important;
+  opacity: 1 !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-message--user .agent-message__meta,
+.mp-app.has-custom-bg .agent-root .agent-message--user .agent-message__meta svg,
+.mp-app.has-custom-bg .agent-root .agent-message--user .agent-message__meta path {
+  color: rgba(91, 33, 182, 0.92) !important;
+  fill: currentColor !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-message--assistant .agent-message__meta,
+.mp-app.has-custom-bg .agent-root .agent-message--assistant .agent-message__meta svg,
+.mp-app.has-custom-bg .agent-root .agent-message--assistant .agent-message__meta path {
+  color: rgba(30, 41, 59, 0.88) !important;
+  fill: currentColor !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-tool {
+  color: rgba(30, 41, 59, 0.78) !important;
+  background: rgba(255, 255, 255, 0.42) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  -webkit-backdrop-filter: blur(6px) saturate(110%);
+  backdrop-filter: blur(6px) saturate(110%);
+  text-shadow: none !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-message__bubble,
+.mp-app.has-custom-bg .agent-root .agent-typing,
+.mp-app.has-custom-bg .agent-root .agent-choice__bubble {
+  background: rgba(255, 255, 255, 0.52) !important;
+  border-color: rgba(255, 255, 255, 0.36) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(110%);
+  backdrop-filter: blur(8px) saturate(110%);
+}
+
+.mp-app.has-custom-bg .agent-root .agent-choice__title {
+  color: rgba(15, 23, 42, 0.82) !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-choice__prompt,
+.mp-app.has-custom-bg .agent-root .agent-message__bubble.markdown-body {
+  color: rgba(15, 23, 42, 0.9) !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-choice__button {
+  min-height: 28px !important;
+  padding: 3px 8px !important;
+  font-size: 11px !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  border-color: rgba(255, 255, 255, 0.36) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(110%);
+  backdrop-filter: blur(8px) saturate(110%);
+  color: #7c3aed !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-choice__button:disabled {
+  color: rgba(15, 23, 42, 0.46) !important;
+}
+
+.mp-app.has-custom-bg .agent-root .markdown-body th {
+  background: rgba(255, 255, 255, 0.52) !important;
+  color: rgba(15, 23, 42, 0.9) !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+.mp-app.has-custom-bg .agent-root .markdown-body td {
+  color: rgba(30, 41, 59, 0.9) !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+.mp-app.has-custom-bg .agent-root .markdown-body code,
+.mp-app.has-custom-bg .agent-root .markdown-body pre {
+  background: rgba(255, 255, 255, 0.42) !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-message--user .agent-message__bubble {
+  background: rgba(124, 58, 237, 0.16) !important;
+  border-color: rgba(124, 58, 237, 0.24) !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-input {
+  background: rgba(255, 255, 255, 0.5) !important;
+  border-color: rgba(255, 255, 255, 0.42) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(120%) !important;
+  backdrop-filter: blur(14px) saturate(120%) !important;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.07) !important;
+}
+
+/* 输入框内禁止出现“左侧分割线”伪元素/边框 */
+.mp-app.has-custom-bg .agent-root .agent-input-actions,
+.mp-app.has-custom-bg .agent-root .agent-mic-btn,
+.mp-app.has-custom-bg .agent-root .agent-textarea {
+  border-left: 0 !important;
+  border-right: 0 !important;
+  box-shadow: none !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-input-actions::before,
+.mp-app.has-custom-bg .agent-root .agent-input-actions::after {
+  display: none !important;
+  content: none !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-command-menu {
+  background: rgba(255, 255, 255, 0.62) !important;
+  border-color: rgba(255, 255, 255, 0.42) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(120%) !important;
+  backdrop-filter: blur(14px) saturate(120%) !important;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08) !important;
+  overflow: hidden !important;
+}
+
+
+
+.mp-app.has-custom-bg .agent-root .agent-command-group__title,
+.mp-app.has-custom-bg .agent-root .agent-command-menu__tip {
+  color: rgba(51, 65, 85, 0.82) !important;
+}
+
+.mp-app.has-custom-bg .agent-root .agent-quick-btn.is-active {
+  color: #7c3aed !important;
+  background: rgba(124, 58, 237, 0.16) !important;
+}
+
+/* 卡片与面板玻璃表面 */
+.mp-app.has-custom-bg .el-card,
+.mp-app.has-custom-bg .settings-card,
+.mp-app.has-custom-bg .card,
+.mp-app.has-custom-bg .user-card,
+.mp-app.has-custom-bg .account-card,
+.mp-app.has-custom-bg .comprehensive-card,
+.mp-app.has-custom-bg .pt-card,
+.mp-app.has-custom-bg .bl-card,
+.mp-app.has-custom-bg .pt-loading-card,
+.mp-app.has-custom-bg .totp-card,
+.mp-app.has-custom-bg .totp-loading-card,
+.mp-app.has-custom-bg .site-card,
+.mp-app.has-custom-bg .site-loading-card,
+.mp-app.has-custom-bg .sites-loading-card,
+.mp-app.has-custom-bg .sm-card,
+.mp-app.has-custom-bg .ov-card,
+.mp-app.has-custom-bg .download-card,
+.mp-app.has-custom-bg .download-loading-state,
+.mp-app.has-custom-bg .download-checking-state,
+.mp-app.has-custom-bg .user-loading-card,
+.mp-app.has-custom-bg .user-loading-info-card,
+.mp-app.has-custom-bg .mp-login-card,
+.mp-app.has-custom-bg .mp-account-panel,
+.mp-app.has-custom-bg .setting-block,
+.mp-app.has-custom-bg .setting-section,
+.mp-app.has-custom-bg .stat-row {
+  background: rgba(255, 255, 255, 0.45) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(110%);
+  backdrop-filter: blur(12px) saturate(110%);
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 统计小格半透明（通用兜底） */
+.mp-app.has-custom-bg .stat-item {
+  -webkit-backdrop-filter: blur(10px) saturate(110%);
+  backdrop-filter: blur(10px) saturate(110%);
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+}
+
+/* 用户信息玻璃表面 */
+/* 主卡片：覆盖线性渐变实底，统一玻璃 */
+.mp-app.has-custom-bg .user-root .user-card,
+.mp-app.has-custom-bg .user-root .account-card,
+.mp-app.has-custom-bg .user-root .comprehensive-card,
+.mp-app.has-custom-bg .user-root .user-loading-card,
+.mp-app.has-custom-bg .user-root .user-loading-info-card {
+  background: rgba(255, 255, 255, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(110%) !important;
+  backdrop-filter: blur(12px) saturate(110%) !important;
+}
+
+/* 分割线弱化 */
+.mp-app.has-custom-bg .user-root .divider,
+.mp-app.has-custom-bg .user-root .user-loading-divider {
+  background: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* 注销按钮半透明红，高度使用添加账号按钮高度 */
+.mp-app.has-custom-bg .user-root .logout-btn {
+  height: 28px !important;
+  line-height: 1 !important;
+  background: rgba(255, 241, 240, 0.55) !important;
+  border-color: rgba(255, 163, 158, 0.55) !important;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.mp-app.has-custom-bg .user-root .logout-btn:hover {
+  background: rgba(255, 226, 225, 0.72) !important;
+}
+
+/* 电影 / 剧集订阅小卡 */
+.mp-app.has-custom-bg .user-root .stat-row {
+  background: rgba(255, 255, 255, 0.42) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(110%) !important;
+  backdrop-filter: blur(10px) saturate(110%) !important;
+}
+
+.mp-app.has-custom-bg .user-root .stat-row.movie .bubble {
+  background: rgba(255, 242, 207, 0.65) !important;
+}
+
+.mp-app.has-custom-bg .user-root .stat-row.tv .bubble {
+  background: rgba(217, 243, 255, 0.65) !important;
+}
+
+/* 账号管理：添加按钮使用浅色蓝色操作样式（蓝系、字重常规、高度一致） */
+.mp-app.has-custom-bg .user-root .account-add-btn {
+  height: 28px !important;
+  background: rgba(22, 119, 255, 0.07) !important;
+  border-color: rgba(22, 119, 255, 0.26) !important;
+  color: #4096ff !important;
+  font-weight: 400 !important;
+  line-height: 1 !important;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.mp-app.has-custom-bg .user-root .account-add-btn:hover {
+  background: rgba(22, 119, 255, 0.11) !important;
+  border-color: rgba(22, 119, 255, 0.38) !important;
+  color: #1677ff !important;
+}
+
+.mp-app.has-custom-bg .user-root .account-card-title {
+  color: rgba(51, 65, 85, 0.78) !important;
+  font-weight: 500 !important;
+}
+
+.mp-app.has-custom-bg .user-root .account-card-count {
+  background: rgba(22, 119, 255, 0.1) !important;
+  color: #4096ff !important;
+  font-weight: 500 !important;
+}
+
+.mp-app.has-custom-bg .user-root .account-row {
+  background: rgba(255, 255, 255, 0.38) !important;
+  border-color: rgba(255, 255, 255, 0.32) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(110%);
+  backdrop-filter: blur(8px) saturate(110%);
+  box-shadow: none !important;
+}
+
+.mp-app.has-custom-bg .user-root .account-row.active {
+  background: rgba(22, 119, 255, 0.14) !important;
+  border-color: rgba(22, 119, 255, 0.38) !important;
+  box-shadow: inset 0 0 0 1px rgba(22, 119, 255, 0.1) !important;
+}
+
+.mp-app.has-custom-bg .user-root .account-row:not(.active):hover {
+  background: rgba(255, 255, 255, 0.5) !important;
+  border-color: rgba(22, 119, 255, 0.32) !important;
+  box-shadow: 0 3px 12px rgba(22, 119, 255, 0.1) !important;
+}
+
+.mp-app.has-custom-bg .user-root .account-switch:hover:not(:disabled) {
+  background: rgba(22, 119, 255, 0.14) !important;
+}
+
+.mp-app.has-custom-bg .user-root .account-remove:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.12) !important;
+}
+
+/* 底部站点统计四格：保留色倾向的半透明渐变 */
+.mp-app.has-custom-bg .user-root .stat-item {
+  background: rgba(255, 255, 255, 0.38) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03) !important;
+}
+
+.mp-app.has-custom-bg .user-root .stat-item.stat-supporting {
+  background: linear-gradient(
+    135deg,
+    rgba(224, 247, 250, 0.55) 0%,
+    rgba(232, 245, 233, 0.4) 100%
+  ) !important;
+}
+
+.mp-app.has-custom-bg .user-root .stat-item.stat-config {
+  background: linear-gradient(
+    135deg,
+    rgba(227, 242, 253, 0.55) 0%,
+    rgba(248, 249, 250, 0.4) 100%
+  ) !important;
+}
+
+.mp-app.has-custom-bg .user-root .stat-item.stat-cookie {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 243, 224, 0.55) 0%,
+    rgba(248, 249, 250, 0.4) 100%
+  ) !important;
+}
+
+.mp-app.has-custom-bg .user-root .stat-item.stat-pending {
+  background: linear-gradient(
+    135deg,
+    rgba(243, 229, 245, 0.55) 0%,
+    rgba(248, 249, 250, 0.4) 100%
+  ) !important;
+}
+
+/* 权限标签略透 */
+.mp-app.has-custom-bg .user-root .perm-tag {
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+/* 版本「非最新」琥珀色：自定义背景下加深，避免与模糊背景糊在一起 */
+.mp-app.has-custom-bg .user-root .version-value.is-outdated {
+  color: #b45309 !important;
+}
+
+.mp-app.has-custom-bg .user-root .version-current {
+  color: #334155 !important;
+}
+
+.mp-app.has-custom-bg .user-root .version-arrow {
+  color: #b45309 !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+.mp-app.has-custom-bg .user-root .version-latest {
+  color: #b45309 !important;
+  font-weight: 700 !important;
+  text-shadow: none !important;
+}
+
+/* 站点管理玻璃表面 */
+/* 统计卡：保留主题色倾向，改为半透明毛玻璃 */
+.mp-app.has-custom-bg .site-manage .sm-stat {
+  -webkit-backdrop-filter: blur(10px) saturate(120%) !important;
+  backdrop-filter: blur(10px) saturate(120%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.32) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+}
+
+.mp-app.has-custom-bg .site-manage .sm-stat--supporting {
+  background: linear-gradient(
+    135deg,
+    rgba(224, 247, 250, 0.55) 0%,
+    rgba(232, 245, 233, 0.45) 100%
+  ) !important;
+}
+
+.mp-app.has-custom-bg .site-manage .sm-stat--config {
+  background: linear-gradient(
+    135deg,
+    rgba(227, 242, 253, 0.55) 0%,
+    rgba(243, 229, 245, 0.45) 100%
+  ) !important;
+}
+
+.mp-app.has-custom-bg .site-manage .sm-stat--filtered {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 243, 224, 0.55) 0%,
+    rgba(252, 228, 236, 0.45) 100%
+  ) !important;
+}
+
+.mp-app.has-custom-bg .site-manage .sm-stat--pending {
+  background: linear-gradient(
+    135deg,
+    rgba(243, 229, 245, 0.55) 0%,
+    rgba(232, 234, 246, 0.45) 100%
+  ) !important;
+}
+
+.mp-app.has-custom-bg .site-manage .sm-add-site-btn.el-button--primary {
+  background: rgba(59, 130, 246, 0.8) !important;
+  border-color: rgba(59, 130, 246, 0.56) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(120%) !important;
+  backdrop-filter: blur(8px) saturate(120%) !important;
+}
+
+.mp-app.has-custom-bg .site-manage .sm-add-site-btn.el-button--primary:not(:disabled):hover {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+}
+
+/* 筛选工具栏：默认按钮半透明（覆盖/更新保留 type 色） */
+.mp-app.has-custom-bg .site-manage .sm-tools .el-button:not(.el-button--primary):not(.el-button--danger) {
+  background: rgba(255, 255, 255, 0.55) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  color: #334155 !important;
+}
+
+.mp-app.has-custom-bg .site-manage .sm-tools .el-button--primary {
+  background: rgba(59, 130, 246, 0.78) !important;
+  border-color: rgba(59, 130, 246, 0.55) !important;
+}
+
+.mp-app.has-custom-bg .site-manage .sm-tools .el-button--danger {
+  background: rgba(239, 68, 68, 0.78) !important;
+  border-color: rgba(239, 68, 68, 0.55) !important;
+}
+
+/* 工具栏按钮 hover 实色填充；高特异性用于覆盖上方静止态 !important。 */
+.mp-app.has-custom-bg .site-manage .sm-tools .el-button:not(.el-button--primary):not(.el-button--danger):not(:disabled):hover {
+  background: #6366f1 !important;
+  border-color: #6366f1 !important;
+  color: #fff !important;
+}
+.mp-app.has-custom-bg .site-manage .sm-tools .el-button--primary:not(:disabled):hover {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  color: #fff !important;
+}
+.mp-app.has-custom-bg .site-manage .sm-tools .el-button--danger:not(:disabled):hover {
+  background: #ef4444 !important;
+  border-color: #ef4444 !important;
+  color: #fff !important;
+}
+
+/* 站点卡片底部分隔线弱化 */
+.mp-app.has-custom-bg .site-manage .sm-card-bottom {
+  border-top-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+/* 更多操作按钮 */
+.mp-app.has-custom-bg .site-manage .sm-more {
+  background: rgba(255, 255, 255, 0.5) !important;
+  color: #475569 !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+}
+
+.mp-app.has-custom-bg .site-manage .sm-more:hover {
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: #0f172a !important;
+}
+
+/* 卡片内操作按钮：半透明底，保留语义色 */
+.mp-app.has-custom-bg .site-manage .sm-act-overwrite {
+  background: rgba(239, 68, 68, 0.14) !important;
+}
+
+.mp-app.has-custom-bg .site-manage .sm-act-update {
+  background: rgba(59, 130, 246, 0.14) !important;
+}
+
+.mp-app.has-custom-bg .site-manage .sm-act-login {
+  background: rgba(16, 185, 129, 0.14) !important;
+}
+
+.mp-app.has-custom-bg .site-manage .sm-act-add {
+  background: rgba(99, 102, 241, 0.14) !important;
+}
+
+/* 卡片按钮 hover 实色填充；高特异性用于覆盖上方静止态 !important。 */
+.mp-app.has-custom-bg .site-manage .sm-act-update:not(:disabled):hover {
+  background: #3b82f6 !important;
+  color: #fff !important;
+}
+.mp-app.has-custom-bg .site-manage .sm-act-overwrite:not(:disabled):hover {
+  background: #ef4444 !important;
+  color: #fff !important;
+}
+.mp-app.has-custom-bg .site-manage .sm-act-login:not(:disabled):hover {
+  background: #10b981 !important;
+  color: #fff !important;
+}
+.mp-app.has-custom-bg .site-manage .sm-act-add:not(:disabled):hover {
+  background: #6366f1 !important;
+  color: #fff !important;
+}
+
+/* 站点数据玻璃表面 */
+/* 总览卡：略实一点，层次更清晰 */
+.mp-app.has-custom-bg .sites-root .ov-card {
+  background: rgba(255, 255, 255, 0.42) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* 工具栏改为卡片式玻璃（非贴顶条） */
+.mp-app.has-custom-bg .sites-root .toolbar {
+  background: rgba(255, 255, 255, 0.28) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.28) !important;
+  border-radius: 12px !important;
+  padding: 8px !important;
+  box-sizing: border-box !important;
+}
+
+/* 站点卡头部分割线弱化 */
+.mp-app.has-custom-bg .sites-root .site-card .card-header,
+.mp-app.has-custom-bg .sites-root .sites-loading-card .card-header {
+  border-bottom-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+/* 等级标签半透明 */
+.mp-app.has-custom-bg .sites-root .user-level {
+  background: rgba(239, 246, 255, 0.55) !important;
+  border-color: rgba(191, 219, 254, 0.55) !important;
+}
+
+/* 状态标签：半透明底 */
+.mp-app.has-custom-bg .sites-root .status-label {
+  -webkit-backdrop-filter: blur(6px) saturate(110%);
+  backdrop-filter: blur(6px) saturate(110%);
+  border-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+/* 上传/下载数据区 */
+.mp-app.has-custom-bg .sites-root .data-transfer {
+  background: rgba(248, 250, 252, 0.42) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(110%);
+  backdrop-filter: blur(8px) saturate(110%);
+}
+
+.mp-app.has-custom-bg .sites-root .transfer-divider {
+  background: rgba(255, 255, 255, 0.45) !important;
+}
+
+.mp-app.has-custom-bg .sites-root .transfer-column.upload .transfer-icon {
+  background-color: rgba(220, 252, 231, 0.65) !important;
+}
+
+.mp-app.has-custom-bg .sites-root .transfer-column.download .transfer-icon {
+  background-color: rgba(254, 226, 226, 0.65) !important;
+}
+
+/* 卡片操作按钮 */
+.mp-app.has-custom-bg .sites-root .action-btn.primary {
+  background: rgba(59, 130, 246, 0.85) !important;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.22) !important;
+}
+
+.mp-app.has-custom-bg .sites-root .action-btn.secondary {
+  background: rgba(255, 255, 255, 0.5) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  color: #475569 !important;
+}
+
+.mp-app.has-custom-bg .sites-root .action-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: #0f172a !important;
+}
+
+/* 空状态 / 列表区透明 */
+.mp-app.has-custom-bg .sites-root .grid,
+.mp-app.has-custom-bg .sites-root .site-cards,
+.mp-app.has-custom-bg .sites-root .empty-state {
+  background: transparent !important;
+}
+
+/* 下载管理玻璃表面 */
+/* 操作栏：贴顶毛玻璃（flush） */
+.mp-app.has-custom-bg .download-manager .action-bar {
+  background: rgba(255, 255, 255, 0.3) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* 下载器选择 / 刷新等默认按钮半透明 */
+.mp-app.has-custom-bg .download-manager .downloader-select .el-select__wrapper {
+  background: rgba(255, 255, 255, 0.48) !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35) inset !important;
+}
+
+.mp-app.has-custom-bg .download-manager .action-buttons .el-button--default,
+.mp-app.has-custom-bg .download-manager .action-buttons .el-button:not(.el-button--primary):not(.el-button--success):not(.el-button--danger) {
+  background: rgba(255, 255, 255, 0.52) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  color: #334155 !important;
+}
+
+.mp-app.has-custom-bg .download-manager .action-buttons .el-button--primary {
+  background: rgba(59, 130, 246, 0.82) !important;
+  border-color: rgba(59, 130, 246, 0.55) !important;
+}
+
+/* 列表 / 空状态透明，避免白底盖住背景 */
+.mp-app.has-custom-bg .download-manager .download-content,
+.mp-app.has-custom-bg .download-manager .download-list,
+.mp-app.has-custom-bg .download-manager .download-items,
+.mp-app.has-custom-bg .download-manager .empty,
+.mp-app.has-custom-bg .download-manager .no-downloader {
+  background: transparent !important;
+}
+
+/* 加载 / 检查态：玻璃面板（覆盖局部 #fff） */
+.mp-app.has-custom-bg .download-manager .download-loading-state,
+.mp-app.has-custom-bg .download-manager .download-checking-state {
+  background: rgba(255, 255, 255, 0.42) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(110%) !important;
+  backdrop-filter: blur(12px) saturate(110%) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 任务卡 .dl-card：不改样式，保留海报底 + 深色遮罩原样 */
+
+/* 凭据与两步验证玻璃表面 */
+/* 列表区透明 */
+.mp-app.has-custom-bg .pt-manager-root .pt-grid,
+.mp-app.has-custom-bg .pt-manager-root .pt-cards,
+.mp-app.has-custom-bg .pt-manager-root .empty-state,
+.mp-app.has-custom-bg .totp-manager .totp-grid,
+.mp-app.has-custom-bg .totp-manager .totp-cards,
+.mp-app.has-custom-bg .totp-manager .empty-state {
+  background: transparent !important;
+}
+
+/* 卡片略通透一点，层次更贴近背景 */
+.mp-app.has-custom-bg .pt-manager-root .pt-card,
+.mp-app.has-custom-bg .pt-manager-root .bl-card,
+.mp-app.has-custom-bg .pt-manager-root .pt-loading-card,
+.mp-app.has-custom-bg .totp-manager .totp-card,
+.mp-app.has-custom-bg .totp-manager .totp-loading-card {
+  background: rgba(255, 255, 255, 0.4) !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+}
+
+/* 卡片操作区使用半透明表面 */
+.mp-app.has-custom-bg .pt-manager-root .card-actions,
+.mp-app.has-custom-bg .totp-manager .card-actions {
+  background: rgba(255, 255, 255, 0.42) !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(110%);
+  backdrop-filter: blur(8px) saturate(110%);
+}
+
+.mp-app.has-custom-bg .pt-manager-root .action-btn:hover {
+  background: rgba(22, 163, 74, 0.12) !important;
+}
+
+.mp-app.has-custom-bg .totp-manager .action-btn:hover {
+  background: rgba(22, 119, 255, 0.12) !important;
+}
+
+/* 凭据与验证码区块分隔线弱化 */
+.mp-app.has-custom-bg .pt-manager-root .card-password-row,
+.mp-app.has-custom-bg .pt-manager-root .bl-info-row,
+.mp-app.has-custom-bg .pt-manager-root .pt-loading-password-row,
+.mp-app.has-custom-bg .totp-manager .card-code-row,
+.mp-app.has-custom-bg .totp-manager .totp-loading-code-row {
+  border-top-color: rgba(255, 255, 255, 0.38) !important;
+}
+
+/* 计时器底轨半透明 */
+.mp-app.has-custom-bg .totp-manager .timer-bg {
+  stroke: rgba(191, 219, 254, 0.55) !important;
+}
+
+
+
+/* 加载骨架玻璃表面 */
+/* 骨架卡片外层（覆盖 scoped 实白 / 灰底） */
+.mp-app.has-custom-bg .user-loading-card,
+.mp-app.has-custom-bg .user-loading-account-card,
+.mp-app.has-custom-bg .user-loading-info-card,
+.mp-app.has-custom-bg .pt-loading-card,
+.mp-app.has-custom-bg .totp-loading-card,
+.mp-app.has-custom-bg .sites-loading-card,
+.mp-app.has-custom-bg .site-loading-card,
+.mp-app.has-custom-bg .download-loading-state,
+.mp-app.has-custom-bg .download-checking-state,
+.mp-app.has-custom-bg .settings-loading {
+  background: rgba(255, 255, 255, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(110%) !important;
+  backdrop-filter: blur(12px) saturate(110%) !important;
+}
+
+/* 骨架列表容器透明 */
+.mp-app.has-custom-bg .pt-loading-cards,
+.mp-app.has-custom-bg .totp-loading-cards,
+.mp-app.has-custom-bg .user-loading-sub-stats,
+.mp-app.has-custom-bg .user-loading-stats-grid {
+  background: transparent !important;
+}
+
+/* shimmer 条：半透明高光扫过，避免 #edf2f7 实灰块 */
+.mp-app.has-custom-bg .user-loading-shimmer,
+.mp-app.has-custom-bg .pt-loading-shimmer,
+.mp-app.has-custom-bg .totp-loading-shimmer,
+.mp-app.has-custom-bg .site-loading-shimmer,
+.mp-app.has-custom-bg .sites-loading-shimmer,
+.mp-app.has-custom-bg [class*='-loading-shimmer'] {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.22) 25%,
+    rgba(255, 255, 255, 0.62) 37%,
+    rgba(255, 255, 255, 0.22) 50%,
+    rgba(255, 255, 255, 0.22) 100%
+  ) !important;
+  background-size: 400% 100% !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* 用户页骨架：账号行（使用 .account-row 毛玻璃表面，避免实白/实灰块） */
+.mp-app.has-custom-bg .user-loading-account-row {
+  background: rgba(255, 255, 255, 0.32) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: blur(8px) saturate(110%) !important;
+  backdrop-filter: blur(8px) saturate(110%) !important;
+}
+
+/* 用户页骨架内部小格 / 按钮占位 */
+.mp-app.has-custom-bg .user-loading-stat,
+.mp-app.has-custom-bg .user-loading-sub-stat {
+  background: rgba(255, 255, 255, 0.32) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: blur(8px) saturate(110%) !important;
+  backdrop-filter: blur(8px) saturate(110%) !important;
+}
+
+.mp-app.has-custom-bg .user-loading-divider {
+  background: rgba(255, 255, 255, 0.38) !important;
+}
+
+/* 暗色主题：压过 UserView scoped 的实色底，保持同一套半透明毛玻璃 */
+html[data-theme='dark'] .mp-app.has-custom-bg .user-loading-card,
+html[data-theme='dark'] .mp-app.has-custom-bg .user-loading-account-card,
+html[data-theme='dark'] .mp-app.has-custom-bg .user-loading-info-card {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(110%) !important;
+  backdrop-filter: blur(12px) saturate(110%) !important;
+}
+
+html[data-theme='dark'] .mp-app.has-custom-bg .user-loading-account-row,
+html[data-theme='dark'] .mp-app.has-custom-bg .user-loading-stat,
+html[data-theme='dark'] .mp-app.has-custom-bg .user-loading-sub-stat {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: blur(8px) saturate(110%) !important;
+  backdrop-filter: blur(8px) saturate(110%) !important;
+}
+
+html[data-theme='dark'] .mp-app.has-custom-bg .user-loading-divider {
+  background: rgba(255, 255, 255, 0.16) !important;
+}
+
+html[data-theme='dark'] .mp-app.has-custom-bg .user-loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.08) 25%,
+    rgba(255, 255, 255, 0.28) 37%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.08) 100%
+  ) !important;
+  background-size: 400% 100% !important;
+}
+
+/* 凭据 / 两步验证：骨架操作条边框 */
+.mp-app.has-custom-bg .pt-loading-actions,
+.mp-app.has-custom-bg .totp-loading-actions {
+  background: rgba(255, 255, 255, 0.35) !important;
+  border-color: rgba(255, 255, 255, 0.32) !important;
+}
+
+.mp-app.has-custom-bg .pt-loading-password-row,
+.mp-app.has-custom-bg .totp-loading-code-row {
+  border-top-color: rgba(255, 255, 255, 0.38) !important;
+}
+
+/* 站点数据骨架：传输区 / 按钮占位 */
+.mp-app.has-custom-bg .sites-loading-card .data-transfer {
+  background: rgba(248, 250, 252, 0.38) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+}
+
+.mp-app.has-custom-bg .sites-loading-card .card-header {
+  border-bottom-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+.mp-app.has-custom-bg .sites-loading-card .transfer-divider {
+  background: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* 站点管理：Element Plus Skeleton */
+.mp-app.has-custom-bg .site-manage .el-skeleton,
+.mp-app.has-custom-bg .el-skeleton {
+  --el-skeleton-color: rgba(255, 255, 255, 0.28);
+  --el-skeleton-to-color: rgba(255, 255, 255, 0.55);
+}
+
+.mp-app.has-custom-bg .site-manage .el-skeleton__item,
+.mp-app.has-custom-bg .el-skeleton__item {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.22) 25%,
+    rgba(255, 255, 255, 0.55) 37%,
+    rgba(255, 255, 255, 0.22) 63%
+  ) !important;
+  background-size: 400% 100% !important;
+}
+
+/* 设置页加载文案区 */
+.mp-app.has-custom-bg .settings-root .settings-loading {
+  border-radius: 12px;
+}
+
+/* 插件 iframe：背景在 iframe 内固定绘制，父层保持不透明，避免跨 frame Alpha 合成。 */
+.mp-app.has-custom-bg .pl-iframe-wrap,
+.mp-app.has-custom-bg .pl-iframe,
+.mp-app.has-custom-bg iframe.pl-iframe {
+  background: #f4f7fb !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* 设置页玻璃表面 */
+/* 覆盖 settings-card 线性渐变实底 */
+.mp-app.has-custom-bg .settings-root .settings-card,
+.mp-app.has-custom-bg .settings-root .el-card {
+  background: rgba(255, 255, 255, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(110%) !important;
+  backdrop-filter: blur(12px) saturate(110%) !important;
+}
+
+.mp-app.has-custom-bg .settings-root .settings-card .el-card__body {
+  background: transparent !important;
+}
+
+/* 区块头部分割线弱化 */
+.mp-app.has-custom-bg .settings-root .section-header {
+  border-bottom-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+/* 区块图标：半透明底，保留语义色倾向 */
+.mp-app.has-custom-bg .settings-root .section-icon {
+  -webkit-backdrop-filter: blur(6px) saturate(110%);
+  backdrop-filter: blur(6px) saturate(110%);
+  background: rgba(239, 246, 255, 0.55) !important;
+  border-color: rgba(191, 219, 254, 0.55) !important;
+}
+
+.mp-app.has-custom-bg .settings-root .section-icon.theme-icon {
+  background: rgba(239, 246, 255, 0.55) !important;
+  border-color: rgba(191, 219, 254, 0.55) !important;
+}
+
+.mp-app.has-custom-bg .settings-root .section-icon.cookie-icon,
+.mp-app.has-custom-bg .settings-root .section-icon.mp-backup-icon {
+  background: rgba(236, 253, 245, 0.55) !important;
+  border-color: rgba(167, 243, 208, 0.55) !important;
+}
+
+.mp-app.has-custom-bg .settings-root .section-icon.open-icon {
+  background: rgba(255, 247, 237, 0.55) !important;
+  border-color: rgba(254, 215, 170, 0.55) !important;
+}
+
+.mp-app.has-custom-bg .settings-root .section-icon.ocr-icon {
+  background: rgba(245, 243, 255, 0.55) !important;
+  border-color: rgba(221, 214, 254, 0.55) !important;
+}
+
+.mp-app.has-custom-bg .settings-root .section-icon.embed-icon {
+  background: rgba(236, 254, 255, 0.55) !important;
+  border-color: rgba(165, 243, 252, 0.55) !important;
+}
+
+.mp-app.has-custom-bg .settings-root .section-icon.webdav-icon {
+  background: rgba(238, 242, 255, 0.55) !important;
+  border-color: rgba(199, 210, 254, 0.55) !important;
+}
+
+/* 合并后的备份控制与来源分区 */
+.mp-app.has-custom-bg .settings-root .backup-auto-controls,
+.mp-app.has-custom-bg .settings-root .backup-key-settings,
+.mp-app.has-custom-bg .settings-root .backup-content-select {
+  background: rgba(255, 255, 255, 0.18) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3) !important;
+}
+
+.mp-app.has-custom-bg .settings-root .backup-source-divider {
+  border-top-color: rgba(255, 255, 255, 0.38) !important;
+}
+
+/* 备份/还原进度：半透明玻璃表面，保持轨道和文字在图片上清晰。 */
+.mp-app.has-custom-bg .settings-root .backup-progress {
+  background: rgba(255, 255, 255, 0.46) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.42),
+    0 4px 14px rgba(15, 23, 42, 0.06) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(115%) !important;
+  backdrop-filter: blur(10px) saturate(115%) !important;
+}
+
+.mp-app.has-custom-bg .settings-root .backup-progress-label {
+  color: rgba(15, 23, 42, 0.9) !important;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.34);
+}
+
+.mp-app.has-custom-bg .settings-root .backup-progress-meta {
+  color: rgba(51, 65, 85, 0.78) !important;
+}
+
+.mp-app.has-custom-bg .settings-root .backup-progress .el-progress-bar__outer {
+  background: rgba(255, 255, 255, 0.52) !important;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.14) !important;
+}
+
+.mp-app.has-custom-bg .settings-root .backup-progress .el-progress-bar__inner {
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.16) !important;
+}
+
+/* PIN 频率选项卡片 */
+.mp-app.has-custom-bg .settings-root .frequency-block {
+  border-top-color: rgba(255, 255, 255, 0.38) !important;
+}
+
+.mp-app.has-custom-bg .settings-root .frequency-option {
+  background: rgba(255, 255, 255, 0.38) !important;
+  border-color: rgba(255, 255, 255, 0.32) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(110%);
+  backdrop-filter: blur(8px) saturate(110%);
+}
+
+.mp-app.has-custom-bg .settings-root .frequency-option:hover {
+  background: rgba(255, 255, 255, 0.52) !important;
+  border-color: rgba(37, 99, 235, 0.32) !important;
+}
+
+.mp-app.has-custom-bg .settings-root .frequency-option.is-checked {
+  background: rgba(239, 246, 255, 0.55) !important;
+  border-color: rgba(37, 99, 235, 0.45) !important;
+}
+
+/* 输入 / 数字框半透明 */
+.mp-app.has-custom-bg .settings-root .el-input__wrapper {
+  background: rgba(255, 255, 255, 0.48) !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35) inset !important;
+}
+
+.mp-app.has-custom-bg .settings-root .el-input__wrapper.is-focus {
+  background: rgba(255, 255, 255, 0.62) !important;
+  box-shadow: 0 0 0 1px rgba(22, 119, 255, 0.55) inset !important;
+}
+
+/* 默认小按钮半透明；primary 半透明蓝 */
+.mp-app.has-custom-bg .settings-root .el-button--default,
+.mp-app.has-custom-bg .settings-root .el-button.is-plain:not(.el-button--primary):not(.el-button--danger):not(.el-button--success) {
+  background: rgba(255, 255, 255, 0.5) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  color: #334155 !important;
+}
+
+/* 实心主按钮 */
+.mp-app.has-custom-bg .settings-root .el-button--primary:not(.is-plain) {
+  background: rgba(59, 130, 246, 0.88) !important;
+  border-color: rgba(59, 130, 246, 0.65) !important;
+  color: #ffffff !important;
+}
+
+/*
+ * plain 主色按钮（如「修改 PIN」）：
+ * 自定义背景下 EP 浅色描边+浅底会与玻璃叠在一起看不清。
+ * 改为更实的浅蓝底 + 深蓝字 + 明显边框。
+ */
+.mp-app.has-custom-bg .settings-root .el-button--primary.is-plain {
+  background: rgba(239, 246, 255, 0.82) !important;
+  border-color: rgba(37, 99, 235, 0.55) !important;
+  color: #1d4ed8 !important;
+  -webkit-backdrop-filter: blur(6px) saturate(110%);
+  backdrop-filter: blur(6px) saturate(110%);
+  font-weight: 600 !important;
+}
+
+.mp-app.has-custom-bg .settings-root .el-button--primary.is-plain:hover,
+.mp-app.has-custom-bg .settings-root .el-button--primary.is-plain:focus {
+  background: rgba(219, 234, 254, 0.92) !important;
+  border-color: rgba(29, 78, 216, 0.65) !important;
+  color: #1e40af !important;
+}
+
+
+
+/* OCR 模型项 / 空态提示 / WebDAV 提示 */
+.mp-app.has-custom-bg .settings-root .ocr-model-item {
+  background: rgba(255, 255, 255, 0.38) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(110%) !important;
+  backdrop-filter: blur(8px) saturate(110%) !important;
+}
+
+.mp-app.has-custom-bg .settings-root .ocr-model-item.active {
+  background: linear-gradient(
+    135deg,
+    rgba(245, 243, 255, 0.55) 0%,
+    rgba(250, 245, 255, 0.45) 100%
+  ) !important;
+  border-color: rgba(124, 58, 237, 0.35) !important;
+}
+
+/* 「还没导入离线包…」等空态卡片：半透明虚线玻璃，避免实色底 */
+.mp-app.has-custom-bg .settings-root .restore-empty {
+  background: rgba(255, 255, 255, 0.32) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.42) !important;
+  color: #64748b !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: blur(10px) saturate(110%) !important;
+  backdrop-filter: blur(10px) saturate(110%) !important;
+}
+
+.mp-app.has-custom-bg .settings-root .webdav-tip {
+  background: linear-gradient(
+    135deg,
+    rgba(239, 246, 255, 0.5) 0%,
+    rgba(248, 251, 255, 0.4) 100%
+  ) !important;
+  border-color: rgba(59, 130, 246, 0.28) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(110%) !important;
+  backdrop-filter: blur(8px) saturate(110%) !important;
+}
+
+/* 深色与自定义背景组合时覆盖 `SettingsView` scoped 和应用壳实色表面。 */
+html[data-theme='dark'] .mp-app.has-custom-bg .settings-root .restore-empty {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.22) !important;
+  color: #94a3b8 !important;
+  -webkit-backdrop-filter: blur(10px) saturate(110%) !important;
+  backdrop-filter: blur(10px) saturate(110%) !important;
+}
+
+html[data-theme='dark'] .mp-app.has-custom-bg .settings-root .ocr-model-item {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(110%) !important;
+  backdrop-filter: blur(8px) saturate(110%) !important;
+}
+
+html[data-theme='dark'] .mp-app.has-custom-bg .settings-root .ocr-model-item.active {
+  background: rgba(124, 58, 237, 0.22) !important;
+  border-color: rgba(167, 139, 250, 0.4) !important;
+}
+
+html[data-theme='dark'] .mp-app.has-custom-bg .settings-root .backup-progress {
+  background: rgba(15, 23, 42, 0.58) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.15),
+    0 4px 16px rgba(0, 0, 0, 0.18) !important;
+  -webkit-backdrop-filter: blur(11px) saturate(112%) !important;
+  backdrop-filter: blur(11px) saturate(112%) !important;
+}
+
+html[data-theme='dark'] .mp-app.has-custom-bg .settings-root .backup-progress-label {
+  color: rgba(241, 245, 249, 0.94) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.34);
+}
+
+html[data-theme='dark'] .mp-app.has-custom-bg .settings-root .backup-progress-meta {
+  color: rgba(203, 213, 225, 0.76) !important;
+}
+
+html[data-theme='dark'] .mp-app.has-custom-bg .settings-root .backup-progress .el-progress-bar__outer {
+  background: rgba(148, 163, 184, 0.28) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.34) !important;
+}
+
+html[data-theme='dark'] .mp-app.has-custom-bg .settings-root .webdav-tip {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.18) 0%,
+    rgba(255, 255, 255, 0.08) 100%
+  ) !important;
+  border-color: rgba(96, 165, 250, 0.28) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(110%) !important;
+  backdrop-filter: blur(8px) saturate(110%) !important;
+}
+
+/* 主题单选按钮组半透明 */
+.mp-app.has-custom-bg .settings-root .theme-radio-group .el-radio-button__inner {
+  background: rgba(255, 255, 255, 0.45) !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+.mp-app.has-custom-bg .settings-root .theme-radio-group .el-radio-button.is-active .el-radio-button__inner {
+  background: rgba(59, 130, 246, 0.82) !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+/* 壁纸缩略图边框略亮 */
+.mp-app.has-custom-bg .settings-root .mp-wallpaper-item {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* 关于页玻璃表面 */
+.mp-app.has-custom-bg .about-root .hero {
+  border-bottom-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+.mp-app.has-custom-bg .about-root .logo-wrap {
+  background: rgba(255, 255, 255, 0.42) !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(110%);
+  backdrop-filter: blur(10px) saturate(110%);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.mp-app.has-custom-bg .about-root .version {
+  background: rgba(238, 242, 255, 0.55) !important;
+  border-color: rgba(199, 210, 254, 0.55) !important;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+/* 功能导航行 */
+.mp-app.has-custom-bg .about-root .nav-item {
+  background: rgba(255, 255, 255, 0.38) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(110%);
+  backdrop-filter: blur(10px) saturate(110%);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+.mp-app.has-custom-bg .about-root .nav-item:hover {
+  background: rgba(255, 255, 255, 0.52) !important;
+}
+
+/* 导航图标：半透明底，保留语义色倾向 */
+.mp-app.has-custom-bg .about-root .nav-icon-wrap {
+  -webkit-backdrop-filter: blur(6px) saturate(110%);
+  backdrop-filter: blur(6px) saturate(110%);
+}
+
+.mp-app.has-custom-bg .about-root .nav-icon-wrap.ni-site {
+  background: rgba(239, 246, 255, 0.55) !important;
+  border-color: rgba(191, 219, 254, 0.55) !important;
+}
+
+.mp-app.has-custom-bg .about-root .nav-icon-wrap.ni-data {
+  background: rgba(236, 253, 245, 0.55) !important;
+  border-color: rgba(187, 247, 208, 0.55) !important;
+}
+
+.mp-app.has-custom-bg .about-root .nav-icon-wrap.ni-dl {
+  background: rgba(254, 243, 199, 0.55) !important;
+  border-color: rgba(253, 230, 138, 0.55) !important;
+}
+
+.mp-app.has-custom-bg .about-root .nav-icon-wrap.ni-totp {
+  background: rgba(243, 232, 255, 0.55) !important;
+  border-color: rgba(216, 180, 254, 0.55) !important;
+}
+
+.mp-app.has-custom-bg .about-root .nav-icon-wrap.ni-creds {
+  background: rgba(240, 253, 244, 0.55) !important;
+  border-color: rgba(187, 247, 208, 0.55) !important;
+}
+
+.mp-app.has-custom-bg .about-root .nav-icon-wrap.ni-user {
+  background: rgba(219, 234, 254, 0.55) !important;
+  border-color: rgba(147, 197, 253, 0.55) !important;
+}
+
+.mp-app.has-custom-bg .about-root .nav-icon-wrap.ni-plugin {
+  background: rgba(252, 231, 243, 0.55) !important;
+  border-color: rgba(249, 168, 212, 0.55) !important;
+}
+
+.mp-app.has-custom-bg .about-root .nav-icon-wrap.ni-settings {
+  background: rgba(224, 231, 255, 0.55) !important;
+  border-color: rgba(165, 180, 252, 0.55) !important;
+}
+
+.mp-app.has-custom-bg .about-root .nav-icon-wrap.ni-about {
+  background: rgba(241, 245, 249, 0.55) !important;
+  border-color: rgba(203, 213, 225, 0.55) !important;
+}
+
+/* 功能说明小卡 */
+.mp-app.has-custom-bg .about-root .fc-item {
+  background: rgba(255, 255, 255, 0.38) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(110%);
+  backdrop-filter: blur(10px) saturate(110%);
+}
+
+/* 页脚 */
+.mp-app.has-custom-bg .about-root .footer-section {
+  border-top-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+.mp-app.has-custom-bg .about-root .link {
+  background: rgba(239, 246, 255, 0.5) !important;
+  border-color: rgba(191, 219, 254, 0.55) !important;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.mp-app.has-custom-bg .about-root .link:hover {
+  background: rgba(219, 234, 254, 0.65) !important;
+}
+
+/* 登录页玻璃表面 */
+.mp-app.has-custom-bg .mp-login {
+  background: transparent !important;
+  /* 页面外层四边统一 12px；卡片铺满，避免居中导致上下空隙远大于左右 */
+  padding: 12px !important;
+  box-sizing: border-box !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+/*
+ * 登录卡片：
+ * - 毛玻璃打在 .el-card
+ * - 内边距打在 .el-card__body
+ * - 宽高都占满 .mp-login 内容区 → 相对弹窗上下左右外边距一致
+ */
+.mp-app.has-custom-bg .mp-login .mp-login-card,
+.mp-app.has-custom-bg .mp-login-card.el-card {
+  background: rgba(255, 255, 255, 0.48) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(120%) !important;
+  backdrop-filter: blur(18px) saturate(120%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.38) !important;
+  border-radius: 20px !important;
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.12) inset !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+/* 卡片内版权一行：分割线弱化 */
+.mp-app.has-custom-bg .mp-login .mp-login-footer {
+  border-top-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+.mp-app.has-custom-bg .mp-login .mp-login-footer-text {
+  color: rgba(15, 23, 42, 0.58) !important;
+}
+
+.mp-app.has-custom-bg .mp-login .mp-login-card .el-card__body,
+.mp-app.has-custom-bg .mp-login-card.el-card .el-card__body {
+  background: transparent !important;
+  padding: 16px !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  /* 内容靠上，页脚用 margin-top:auto 贴底，吃掉上下空白 */
+  justify-content: flex-start !important;
+}
+
+/* 快捷登录内层面板：略通透于外卡 */
+.mp-app.has-custom-bg .mp-login .mp-account-panel {
+  background: rgba(255, 255, 255, 0.28) !important;
+  border: 1px solid rgba(255, 255, 255, 0.32) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: blur(10px) saturate(110%) !important;
+  backdrop-filter: blur(10px) saturate(110%) !important;
+}
+
+.mp-app.has-custom-bg .mp-login .mp-account-panel-count {
+  background: rgba(22, 119, 255, 0.16) !important;
+}
+
+/* 账号行 */
+.mp-app.has-custom-bg .mp-login .mp-account-item {
+  background: rgba(255, 255, 255, 0.42) !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(110%);
+  backdrop-filter: blur(8px) saturate(110%);
+  box-shadow: none !important;
+}
+
+.mp-app.has-custom-bg .mp-login .mp-account-item:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.58) !important;
+  border-color: rgba(22, 119, 255, 0.4) !important;
+  box-shadow: 0 6px 16px rgba(22, 119, 255, 0.12) !important;
+}
+
+.mp-app.has-custom-bg .mp-login .mp-account-item.is-busy {
+  background: rgba(22, 119, 255, 0.12) !important;
+  border-color: rgba(22, 119, 255, 0.35) !important;
+}
+
+.mp-app.has-custom-bg .mp-login .mp-account-arrow {
+  background: rgba(255, 255, 255, 0.4) !important;
+  color: #64748b !important;
+}
+
+.mp-app.has-custom-bg .mp-login .mp-account-item:hover:not(:disabled) .mp-account-arrow {
+  background: rgba(22, 119, 255, 0.16) !important;
+  color: #1677ff !important;
+}
+
+/* 重新登录：半透明白底，无实心块 */
+.mp-app.has-custom-bg .mp-login .mp-relogin-btn {
+  background: rgba(255, 255, 255, 0.48) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  color: #334155 !important;
+  -webkit-backdrop-filter: blur(8px) saturate(110%);
+  backdrop-filter: blur(8px) saturate(110%);
+  box-shadow: none !important;
+}
+
+.mp-app.has-custom-bg .mp-login .mp-relogin-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.68) !important;
+  border-color: rgba(22, 119, 255, 0.4) !important;
+  color: #1677ff !important;
+}
+
+/* 表单输入：半透明，聚焦更清晰 */
+.mp-app.has-custom-bg .mp-login .el-input__wrapper {
+  background: rgba(255, 255, 255, 0.52) !important;
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: blur(8px) saturate(110%);
+  backdrop-filter: blur(8px) saturate(110%);
+}
+
+.mp-app.has-custom-bg .mp-login .el-input__wrapper:hover {
+  border-color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.mp-app.has-custom-bg .mp-login .el-input__wrapper.is-focus {
+  background: rgba(255, 255, 255, 0.72) !important;
+  border-color: rgba(59, 130, 246, 0.65) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+}
+
+/*
+ * 登录按钮：使用 PIN 解锁按钮样式，覆盖 EP 变量；无描边避免一圈浅边。
+ */
+.mp-app.has-custom-bg .mp-login .mp-login-btn.el-button,
+.mp-app.has-custom-bg .mp-login .mp-login-btn.el-button--primary {
+  --el-button-bg-color: rgba(37, 99, 235, 0.82);
+  --el-button-border-color: transparent;
+  --el-button-text-color: #ffffff;
+  --el-button-hover-bg-color: rgba(29, 78, 216, 0.9);
+  --el-button-hover-border-color: transparent;
+  --el-button-hover-text-color: #ffffff;
+  --el-button-active-bg-color: rgba(30, 64, 175, 0.94);
+  --el-button-active-border-color: transparent;
+  --el-button-active-text-color: #ffffff;
+  background: rgba(37, 99, 235, 0.82) !important;
+  border: none !important;
+  outline: none !important;
+  color: #ffffff !important;
+  -webkit-backdrop-filter: blur(10px) saturate(120%) !important;
+  backdrop-filter: blur(10px) saturate(120%) !important;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.28) !important;
+}
+
+.mp-app.has-custom-bg .mp-login .mp-login-btn.el-button--primary:hover,
+.mp-app.has-custom-bg .mp-login .mp-login-btn.el-button--primary:focus {
+  background: rgba(29, 78, 216, 0.9) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.34) !important;
+}
+
+.mp-app.has-custom-bg .mp-login .mp-login-btn.el-button.is-loading {
+  background: rgba(37, 99, 235, 0.65) !important;
+  border: none !important;
+}
+
+/* PIN 解锁页 scoped 边界 */
+/* 根节点仅承载透明背景，不得继承卡片边框或 `backdrop-filter`。 */
+.mp-app.has-custom-bg .pin-lock-page {
+  background: transparent !important;
+  /* 取消 scoped 浅色渐变底 */
+  background-image: none !important;
+}
+
+.mp-app.has-custom-bg .pin-lock-card {
+  background: rgba(255, 255, 255, 0.48) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(120%) !important;
+  backdrop-filter: blur(18px) saturate(120%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.38) !important;
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.12) inset !important;
+}
+
+/* 6 位 PIN 输入格：半透明，聚焦更清晰 */
+.mp-app.has-custom-bg .pin-lock-page .pin-code-box,
+.mp-app.has-custom-bg .pin-code-box {
+  background: rgba(255, 255, 255, 0.55) !important;
+  border-color: rgba(255, 255, 255, 0.55) !important;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65) !important;
+  color: #0f172a !important;
+  -webkit-backdrop-filter: blur(8px) saturate(110%);
+  backdrop-filter: blur(8px) saturate(110%);
+}
+
+.mp-app.has-custom-bg .pin-lock-page .pin-code-box:focus,
+.mp-app.has-custom-bg .pin-code-box:focus {
+  background: rgba(255, 255, 255, 0.78) !important;
+  border-color: rgba(59, 130, 246, 0.75) !important;
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.2),
+    0 1px 3px rgba(59, 130, 246, 0.12) !important;
+}
+
+.mp-app.has-custom-bg .pin-lock-page .pin-code-box:valid,
+.mp-app.has-custom-bg .pin-code-box:valid {
+  background: rgba(239, 246, 255, 0.7) !important;
+  border-color: rgba(96, 165, 250, 0.75) !important;
+  box-shadow:
+    0 1px 2px rgba(59, 130, 246, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75) !important;
+}
+
+/*
+ * 解锁按钮：EP 用 CSS 变量上色，需同时覆盖变量 + 背景/边框。
+ * 不使用 inset 白描边，否则四周会出现一圈浅边框。
+ */
+.mp-app.has-custom-bg .pin-lock-page .pin-unlock-btn.el-button,
+.mp-app.has-custom-bg .pin-lock-page .pin-unlock-btn.el-button--primary,
+.mp-app.has-custom-bg .pin-unlock-btn.el-button--primary {
+  --el-button-bg-color: rgba(37, 99, 235, 0.82);
+  --el-button-border-color: transparent;
+  --el-button-text-color: #ffffff;
+  --el-button-hover-bg-color: rgba(29, 78, 216, 0.9);
+  --el-button-hover-border-color: transparent;
+  --el-button-hover-text-color: #ffffff;
+  --el-button-active-bg-color: rgba(30, 64, 175, 0.94);
+  --el-button-active-border-color: transparent;
+  --el-button-active-text-color: #ffffff;
+  --el-button-disabled-bg-color: rgba(37, 99, 235, 0.45);
+  --el-button-disabled-border-color: transparent;
+  --el-button-disabled-text-color: rgba(255, 255, 255, 0.85);
+  background: rgba(37, 99, 235, 0.82) !important;
+  border: none !important;
+  outline: none !important;
+  color: #ffffff !important;
+  -webkit-backdrop-filter: blur(10px) saturate(120%) !important;
+  backdrop-filter: blur(10px) saturate(120%) !important;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.28) !important;
+}
+
+.mp-app.has-custom-bg .pin-lock-page .pin-unlock-btn.el-button--primary:hover,
+.mp-app.has-custom-bg .pin-lock-page .pin-unlock-btn.el-button--primary:focus,
+.mp-app.has-custom-bg .pin-unlock-btn.el-button--primary:hover,
+.mp-app.has-custom-bg .pin-unlock-btn.el-button--primary:focus {
+  background: rgba(29, 78, 216, 0.9) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.34) !important;
+}
+
+.mp-app.has-custom-bg .pin-lock-page .pin-unlock-btn.el-button--primary:active,
+.mp-app.has-custom-bg .pin-unlock-btn.el-button--primary:active {
+  background: rgba(30, 64, 175, 0.94) !important;
+  border: none !important;
+}
+
+.mp-app.has-custom-bg .pin-lock-page .pin-unlock-btn.el-button.is-loading,
+.mp-app.has-custom-bg .pin-unlock-btn.el-button.is-loading {
+  background: rgba(37, 99, 235, 0.65) !important;
+  border: none !important;
+}
+
+/* 错误提示半透明红 */
+.mp-app.has-custom-bg .pin-lock-page .pin-error .el-alert,
+.mp-app.has-custom-bg .pin-error.el-alert,
+.mp-app.has-custom-bg .pin-error .el-alert {
+  background: rgba(254, 242, 242, 0.72) !important;
+  border-color: rgba(252, 165, 165, 0.55) !important;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+html[data-theme='dark'] .mp-app.has-custom-bg .pin-lock-card {
+  background: rgba(30, 41, 59, 0.72) !important;
+  border-color: rgba(51, 65, 85, 0.8) !important;
+}
+
+html[data-theme='dark'] .mp-app.has-custom-bg .pin-code-box {
+  background: rgba(15, 23, 42, 0.55) !important;
+  border-color: rgba(71, 85, 105, 0.75) !important;
+  color: #e2e8f0 !important;
+}
