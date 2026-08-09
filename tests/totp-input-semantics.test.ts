@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   isImageCaptchaSemanticText,
   isTotpSemanticText,
+  SEARCH_LIKE_KEYWORDS_REGEX,
 } from '../content/captcha-auto-fill'
 
 describe('两步验证输入框语义分类', () => {
@@ -35,6 +36,25 @@ describe('两步验证输入框语义分类', () => {
       'captcha verify_code',
     ]) {
       expect(isImageCaptchaSemanticText(text)).toBe(true)
+    }
+  })
+})
+
+describe('搜索/快捷定位输入框识别', () => {
+  it('GitHub 顶部「转到文件」快捷搜索框被识别为搜索框（避免 TOTP 误识别）', () => {
+    for (const text of [
+      'prc-components-FileResultsList-ivWkTK FormControl-input 转到文件',
+      'FormControl-input FormControl-placeholder-trigger Go to file',
+      'FormControl-input FormControl-placeholder-trigger Go to file',
+      'command_palette_search text',
+    ]) {
+      expect(SEARCH_LIKE_KEYWORDS_REGEX.test(text)).toBe(true)
+    }
+  })
+
+  it('一般搜索/查询关键字仍命中', () => {
+    for (const text of ['q', 'query', 'search', '搜索', '关键词']) {
+      expect(SEARCH_LIKE_KEYWORDS_REGEX.test(text)).toBe(true)
     }
   })
 })

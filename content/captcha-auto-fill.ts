@@ -395,8 +395,10 @@ function isSearchLikeInput(input: HTMLInputElement): boolean {
   const type = (input.type || 'text').toLowerCase()
   if (type === 'search') return true
   const text = getInputText(input)
-  return /search|keyword|keywords|query|\bq\b|搜索|搜素|关键字|关键词|查找|检索/.test(text)
+  return /search|keyword|keywords|query|\bq\b|搜索|搜素|关键字|关键词|查找|检索|转到文件|go to file|filereresults|file.?results|file.?tree|command.?palette/.test(text)
 }
+
+export const SEARCH_LIKE_KEYWORDS_REGEX = /search|keyword|keywords|query|\bq\b|搜索|搜素|关键字|关键词|查找|检索|转到文件|go to file|filereresults|file.?results|file.?tree|command.?palette/i
 
 function isAccountLikeInput(input: HTMLInputElement): boolean {
   const type = (input.type || 'text').toLowerCase()
@@ -659,6 +661,8 @@ const INPUT_EXCLUDE_KEYWORDS = [
   '安全码', '安全碼', '验证器', '驗證器', '搜索', '搜尋', '查询', '查詢', '关键字', '關鍵字',
   'keyword', 'search', 'query',
   'otpcode', 'otp_code', 'twofactor', 'twostep', 'google_auth', 'ga_code',
+  '转到文件', 'go to file', 'FileResultsList', 'prc-components-FileResultsList',
+  'FileTree-navigation', 'command_palette', 'command palette', 'command-palette',
 ]
 const EXCLUDED_INPUT_TYPES = [
   'password', 'email', 'tel', 'phone', 'mobile', 'hidden', 'submit', 'button',
