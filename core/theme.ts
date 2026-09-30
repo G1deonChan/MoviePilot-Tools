@@ -260,8 +260,8 @@ function parseWallpaperUrl(data: unknown): string {
   if (typeof data === 'string') return data
   if (data && typeof data === 'object') {
     const d = data as { message?: unknown; data?: unknown }
-    if (typeof d.message === 'string') return d.message
     if (typeof d.data === 'string') return d.data
+    if (typeof d.message === 'string') return d.message
   }
   return ''
 }

@@ -30,6 +30,17 @@ describe('Supporting 数据读取', () => {
     expect(apiGet).toHaveBeenCalledTimes(1)
   })
 
+  it('兼容 v3 标准包装响应', async () => {
+    apiGet.mockResolvedValue({
+      ok: true,
+      data: { success: true, data: { 'v3.pt': { id: 3, name: 'V3' } } },
+    })
+    const { fetchSupportingSites } = await loadService()
+    await expect(fetchSupportingSites()).resolves.toEqual({
+      'v3.pt': { id: 3, name: 'V3', domain: 'v3.pt' },
+    })
+  })
+
   it('并发调用共享请求，force 在请求结束后绕过成功缓存', async () => {
     let resolveRequest: ((value: unknown) => void) | null = null
     apiGet.mockImplementationOnce(

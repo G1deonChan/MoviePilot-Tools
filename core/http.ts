@@ -8,6 +8,23 @@ export interface ApiResult<T = unknown> {
   error?: string
 }
 
+export function asApiRecord(data: unknown): Record<string, unknown> | null {
+  return data && typeof data === 'object' ? (data as Record<string, unknown>) : null
+}
+
+export function unwrapApiData<T = unknown>(data: unknown): T {
+  const root = asApiRecord(data)
+  if (!root || !('data' in root)) return data as T
+  return root.data as T
+}
+
+export function readApiMessage(data: unknown): string {
+  const root = asApiRecord(data)
+  if (!root) return ''
+  const message = root.message_i18n ?? root.message ?? root.detail
+  return typeof message === 'string' ? message.trim() : ''
+}
+
 interface RequestOpts extends Omit<RequestInit, 'body'> {
   baseUrl?: string
   query?: Record<string, string | number | boolean | undefined>

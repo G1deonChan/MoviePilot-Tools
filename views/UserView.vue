@@ -383,7 +383,7 @@ import {
   removeAccount,
   type MpAccountPublic,
 } from '../services/auth'
-import { api } from '../core/http'
+import { api, unwrapApiData } from '../core/http'
 import { appState } from '../core/state'
 import type { UserInfo } from '../core/types'
 import { getDomainCookies } from '../utils/cookie'
@@ -500,7 +500,8 @@ async function fetchSubscriptions(name: string): Promise<void> {
     const res = await api.get<Array<{ type?: string }>>(
       `/api/v1/subscribe/user/${encodeURIComponent(name)}`,
     )
-    const list = res.ok && Array.isArray(res.data) ? res.data : []
+    const payload = unwrapApiData<Array<{ type?: string }> | null>(res.data)
+    const list = res.ok && Array.isArray(payload) ? payload : []
     movieCount.value = list.filter((it) => it.type === '电影').length
     tvCount.value = list.filter((it) => it.type === '电视剧').length
   } catch {

@@ -1,23 +1,30 @@
 // 用户信息服务
-import { api, request } from '../core/http'
+import { api, request, unwrapApiData } from '../core/http'
 import type { UserInfo } from '../core/types'
 import { appState } from '../core/state'
 import { storageGet, storageSet, STORAGE_KEYS } from '../core/storage'
 
 export async function fetchCurrentUser(): Promise<UserInfo | null> {
   const res = await api.get<UserInfo>('/api/v1/user/current')
-  return res.ok ? res.data : null
+  if (!res.ok) return null
+  const data = unwrapApiData<UserInfo | null>(res.data)
+  return data && typeof data === 'object' ? data : null
 }
 
 /** MoviePilot 用户接口支持更新用户名和邮箱。 */
 export async function updateUserInfo(payload: Partial<UserInfo>): Promise<boolean> {
-  const res = await api.put('/api/v1/user/', payload)
-  return res.ok
+  const preferred = await api.put('/api/v1/user/current', payload)
+  if (preferred.ok) return true
+  if (preferred.status !== 404 && preferred.status !== 405) return false
+  const legacy = await api.put('/api/v1/user/', payload)
+  return legacy.ok
 }
 
 export async function fetchSystemEnv(): Promise<Record<string, unknown> | null> {
   const res = await api.get<Record<string, unknown>>('/api/v1/system/env')
-  return res.ok ? res.data : null
+  if (!res.ok) return null
+  const data = unwrapApiData<Record<string, unknown> | null>(res.data)
+  return data && typeof data === 'object' ? data : null
 }
 
 /** 解析 `/system/env` 响应体；存在 `data` 包裹时读取其内部值。 */

@@ -55,6 +55,12 @@ describe('站点管理 Private Vault 存储', () => {
     expect(text).toContain('example.com')
   })
 
+  it('兼容 v3 包装响应中的 data 站点数组', async () => {
+    apiGet.mockResolvedValue({ ok: true, data: { success: true, data: [site] } })
+    await expect(fetchSites()).resolves.toEqual([site])
+    expect(privateStore.sites).toEqual([site])
+  })
+
   it('接口失败时只从 Private Store 加载站点配置', async () => {
     privateStore.sites = [site]
     apiGet.mockResolvedValue({ ok: false, data: null })

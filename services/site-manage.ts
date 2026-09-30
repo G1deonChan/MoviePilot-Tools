@@ -1,5 +1,5 @@
 // 站点管理服务：站点 CRUD、Cookie/UA 差异检测、浏览器↔服务器同步、筛选行构建
-import { api } from '../core/http'
+import { api, readApiMessage, unwrapApiData } from '../core/http'
 import { fetchSupportingSites } from './site-supporting'
 import type { SiteFilterKey } from '../core/storage-contracts'
 import type {
@@ -40,8 +40,11 @@ async function saveStoredSites(sites: Site[]): Promise<void> {
 export async function fetchSites(): Promise<Site[]> {
   const res = await api.get<Site[]>('/api/v1/site/')
   if (res.ok) {
-    await saveStoredSites(res.data || [])
-    return res.data || []
+    const list = unwrapApiData<Site[] | null | undefined>(res.data)
+    if (Array.isArray(list)) {
+      await saveStoredSites(list)
+      return list
+    }
   }
   return loadStoredSites()
 }
@@ -50,12 +53,6 @@ export async function fetchSites(): Promise<Site[]> {
 export interface SiteApiOutcome {
   ok: boolean
   message?: string
-}
-
-function readApiMessage(data: unknown): string {
-  if (!data || typeof data !== 'object') return ''
-  const m = (data as { message?: unknown }).message
-  return typeof m === 'string' ? m.trim() : ''
 }
 
 /** HTTP 成功且未显式 success:false 才算业务成功 */
@@ -615,7 +612,10 @@ export async function testConnection(site: Site): Promise<boolean> {
   const res = await api.get<{ success?: boolean; message?: string }>(
     `/api/v1/site/test/${site.id}`,
   )
-  return res.ok && (res.data?.success ?? false)
+  if (!res.ok) return false
+  const body = (res.data && typeof res.data === 'object') ? res.data : {}
+  const unwrapped = unwrapApiData<{ success?: boolean } | null>(body)
+  return unwrapped?.success ?? (body as { success?: boolean }).success ?? true
 }
 
 // 禁用状态持久化

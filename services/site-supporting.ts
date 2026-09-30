@@ -1,4 +1,4 @@
-import { api } from '../core/http'
+import { api, unwrapApiData } from '../core/http'
 import type { SiteSupportingInfo } from '../core/types'
 
 export type SupportingDict = Record<string, SiteSupportingInfo>
@@ -18,9 +18,10 @@ export async function fetchSupportingSites(force = false): Promise<SupportingDic
   supportingRequest = api
     .get<Record<string, Omit<SiteSupportingInfo, 'domain'>>>('/api/v1/site/supporting')
     .then((res) => {
-      if (!res.ok || !res.data) return supportingCache || {}
+      const payload = unwrapApiData<Record<string, Omit<SiteSupportingInfo, 'domain'>> | null>(res.data)
+      if (!res.ok || !payload || typeof payload !== 'object') return supportingCache || {}
       supportingCache = Object.fromEntries(
-        Object.entries(res.data).map(([domain, info]) => [domain, { ...info, domain }]),
+        Object.entries(payload).map(([domain, info]) => [domain, { ...info, domain }]),
       )
       return supportingCache
     })
