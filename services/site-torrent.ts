@@ -1,6 +1,18 @@
 import type { AddTorrentIn, Site, SiteDomainAlias, SiteSupportingInfo } from '../core/types'
 import { domainsMatch, normalizeDomain } from './site-domain-alias'
 
+/** NexusPHP 详情标题先提取引号中的资源名，避免把站点前缀作为搜索词。 */
+export function normalizeTorrentPageTitle(value: string): string {
+  const quoted = value.match(/(?:种子详情|種子詳情|torrent details?)\s*[:：]?\s*["“](.+?)["”]/i)
+  if (quoted?.[1]) return quoted[1].trim()
+  return value
+    .replace(/\s*-\s*Powered by NexusPHP\s*$/i, '')
+    .replace(/^.*?\s*::\s*/, '')
+    .replace(/\s+-\s+[^-]+$/, '')
+    .replace(/\s+\|\s+[^|]+$/, '')
+    .trim()
+}
+
 function hostOf(value: string): string {
   try {
     return new URL(value).hostname
@@ -52,9 +64,9 @@ export function findConfiguredSiteForUrl(
   })
 }
 
-function comparableUrl(value: string): string {
+function comparableUrl(value: string, baseUrl?: string): string {
   try {
-    const url = new URL(value)
+    const url = new URL(value.replace(/^\[[^\]]*\]/, ''), baseUrl)
     url.hash = ''
     const entries = [...url.searchParams.entries()].sort(([a], [b]) => a.localeCompare(b))
     url.search = ''
@@ -65,15 +77,15 @@ function comparableUrl(value: string): string {
   }
 }
 
-function resourceIds(value: string): Set<string> {
+function resourceIds(value: string, baseUrl?: string): Set<string> {
   const ids = new Set<string>()
   try {
-    const url = new URL(value)
+    const url = new URL(value.replace(/^\[[^\]]*\]/, ''), baseUrl)
     for (const key of ['id', 'tid', 'torrentid']) {
       const id = url.searchParams.get(key)?.trim()
       if (id) ids.add(id)
     }
-    const pathMatch = url.pathname.match(/(?:torrent|detail|details)[/-](\d+)/i)
+    const pathMatch = url.pathname.match(/\/(?:torrents?|details?|view|download)[/-]([A-Za-z0-9_-]+)(?:\/|$)/i)
     if (pathMatch?.[1]) ids.add(pathMatch[1])
   } catch {
     // 非标准 URL 只参与完整地址比较。
@@ -90,10 +102,10 @@ export function findTorrentForPage(
 
   return resources.find((torrent) => {
     const candidates = [torrent.page_url || '', torrent.enclosure || ''].filter(Boolean)
-    if (candidates.some((value) => comparableUrl(value) === targetUrl)) return true
+    if (candidates.some((value) => comparableUrl(value, pageUrl) === targetUrl)) return true
     if (!targetIds.size) return false
     return candidates.some((value) => {
-      const ids = resourceIds(value)
+      const ids = resourceIds(value, pageUrl)
       return [...targetIds].some((id) => ids.has(id))
     })
   })

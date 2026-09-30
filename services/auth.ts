@@ -1,4 +1,5 @@
 import { api, registerTokenRefreshHandler } from '../core/http'
+import { mpErrorMessage, mpPayload } from '../core/mp-response'
 import {
   clearActiveSession,
   getActiveBaseUrl,
@@ -13,6 +14,8 @@ import { maskBaseUrl, normalizeBaseUrl } from '../utils/url'
 export interface LoginResult {
   success: boolean
   message?: string
+  mfaRequired?: boolean
+  mfaMethods?: string[]
 }
 
 export type MpUserInfo = AuthUserProfile
@@ -135,7 +138,7 @@ async function requestAccessToken(opts: {
   username: string
   password: string
   otp_password?: string
-}): Promise<{ ok: true; data: LoginResponse } | { ok: false; message: string; mfaRequired?: boolean }> {
+}): Promise<{ ok: true; data: LoginResponse } | { ok: false; message: string; mfaRequired?: boolean; mfaMethods?: string[] }> {
   const base = normalizeBaseUrl(opts.baseURL)
   if (!base) return { ok: false, message: '服务器地址无效' }
   const form = new URLSearchParams()
@@ -151,13 +154,17 @@ async function requestAccessToken(opts: {
     if (!res.ok) {
       const mfa = (res.headers.get('X-MFA-Required') || '').toLowerCase() === 'true'
       let detail = `登录失败 (HTTP ${res.status})`
+      let mfaMethods: string[] = []
       try {
-        const body = (await res.json()) as { detail?: string }
-        if (body?.detail) detail = String(body.detail)
+        const body = (await res.json()) as { data?: { mfa_methods?: unknown } }
+        detail = mpErrorMessage(body, detail)
+        if (Array.isArray(body.data?.mfa_methods)) {
+          mfaMethods = body.data.mfa_methods.filter((method): method is string => typeof method === 'string')
+        }
       } catch {
         // 响应不是 JSON 时保留 HTTP 错误
       }
-      return { ok: false, message: detail, mfaRequired: mfa || /双重|验证码|mfa|otp/i.test(detail) }
+      return { ok: false, message: detail, mfaRequired: mfa || mfaMethods.length > 0 || /双重|二次验证|验证码|mfa|otp/i.test(detail), mfaMethods }
     }
     const data = (await res.json()) as LoginResponse
     if (!data.access_token) return { ok: false, message: '未返回访问令牌' }
@@ -298,8 +305,23 @@ export async function login(
 ): Promise<LoginResult> {
   const baseURL = normalizeBaseUrl(baseUrl)
   if (!baseURL) return { success: false, message: '服务器地址无效' }
+  // 初始化由 MoviePilot 网页完成，扩展只提示，不创建管理员或改写 API Key。
+  try {
+    const response = await fetch(`${baseURL}/api/v1/login/initialization`)
+    if (response.ok) {
+      const state = mpPayload(await response.json()) as { initialized?: boolean } | null
+      if (state?.initialized === false) {
+        return { success: false, message: 'MoviePilot 尚未初始化，请先打开服务器网页创建管理员，再回到扩展登录。' }
+      }
+    }
+  } catch {
+    // 初始化状态不可用时继续正常登录，由认证接口报告连接错误。
+  }
   const result = await requestAccessToken({ baseURL, username, password, otp_password: otp })
-  if (!result.ok) return { success: false, message: result.message }
+  if (!result.ok) return {
+    success: false, message: result.mfaRequired ? `${result.message}，请填写身份验证器的 6 位验证码后重试。` : result.message,
+    mfaRequired: result.mfaRequired, mfaMethods: result.mfaMethods,
+  }
   await upsertAccountFromLogin({
     baseURL,
     username,
@@ -327,7 +349,7 @@ export async function switchAccount(accountId: string): Promise<LoginResult> {
     password: account.password,
     otp_password: account.otpPassword,
   })
-  if (!result.ok) return { success: false, message: result.message }
+  if (!result.ok) return { success: false, message: result.message, mfaRequired: result.mfaRequired, mfaMethods: result.mfaMethods }
   await upsertAccountFromLogin({
     baseURL: account.baseURL,
     username: account.username,
@@ -423,5 +445,6 @@ export async function isLoggedIn(): Promise<boolean> {
 }
 
 export async function ping(): Promise<boolean> {
-  return (await api.get('/api/v1/system/env')).ok
+  // 当前用户接口允许普通账号；系统环境接口要求管理员权限。
+  return (await api.get('/api/v1/user/current')).ok
 }

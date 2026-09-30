@@ -10,7 +10,7 @@
   [![WXT](https://img.shields.io/badge/WXT-0.19-8b5cf6.svg?style=flat-square)](https://wxt.dev/)
   [![Vue 3](https://img.shields.io/badge/Vue-3.x-42b883.svg?style=flat-square)](https://vuejs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6.svg?style=flat-square)](https://www.typescriptlang.org/)
-  [![Version](https://img.shields.io/badge/version-2.0.0-1677ff.svg?style=flat-square)](#-当前版本)
+  [![Version](https://img.shields.io/badge/version-2.0.3-1677ff.svg?style=flat-square)](#-当前版本)
   [![License](https://img.shields.io/badge/license-GPL--3.0-green.svg?style=flat-square)](LICENSE)
 </div>
 
@@ -36,6 +36,12 @@ Cookie/UA 管理、站点数据统计、下载任务控制、TOTP 两步验证�
 > 请妥善保管恢复密钥和导出的备份文件，并建议在共享设备上启用 PIN 安全锁。
 
 ---
+
+## MoviePilot 版本兼容
+
+当前扩展版本 **2.0.3** 主要适配 MoviePilot **v3**，接口基准为 v3.0.10-1。支持统一响应、登录二次验证和原生下载接口；插件备份需要支持 v3 的 MoviePilotTools 配套插件。
+
+安装更新、站点详情页推送修复及验证范围见 [MoviePilot v3 适配说明](docs/MOVIEPILOT_V3.md)。保留旧式直接响应的读取能力，MoviePilot v2 尚未完成完整回归。
 
 ## ✨ 核心功能
 
@@ -203,7 +209,7 @@ MoviePilot-Tools-2.0/
 ├── pack-assets/                 # OCR、站点图标等发布资源源文件
 ├── scripts/                     # CRX、OCR、图标打包与质量检查脚本
 ├── tests/                       # Vitest 单元与集成测试
-├── doc/                         # 架构、功能、专项设计与验收记录
+├── docs/                        # 公开使用说明、兼容性说明与隐私政策
 ├── package.json                 # 项目依赖与脚本
 ├── tsconfig.json                # TypeScript 严格模式配置
 ├── vitest.config.ts             # Vitest 配置
@@ -374,6 +380,29 @@ npm run pack:icons
 ---
 
 ## 🚀 当前版本
+
+### `v2.0.3` — NexusPHP 详情页标题修复
+
+- 修正 `站点 :: 种子详情 "资源名" - Powered by NexusPHP` 的标题提取，避免只保留站点名。
+- 保留资源名中的 WEB-DL、发布组等字段，将规范化后的资源名用于精确种子定位。
+- 实例只读核验确认：资源首页没有目标种子时，按正确资源名搜索可匹配详情页指定编号。
+- 231 项单元测试及 6 项真实实例只读联调通过；更新扩展后请刷新已打开的 PT 详情页。
+
+### `v2.0.2` — 详情页种子定位修复
+
+- 详情页推送在资源首页未命中后按页面标题搜索，并最多读取浏览与搜索各 3 页。
+- 补充 `/torrents/`、`/view/` 路径、相对地址和带动态标记链接的种子编号匹配。
+- 仍按详情页地址或编号精确定位，不按标题选择其他种子。
+- 区分“接口失败”“未返回资源”和“未匹配当前种子”，不把未匹配结果直接归因于 Cookie。
+
+### `v2.0.1` — MoviePilot v3 适配
+
+- 以 MoviePilot v3.0.10-1 为主要接口基准，统一处理普通 JSON 响应和业务错误。
+- 修复站点列表、适配站点字典、用户资料及插件登录桥接的数据读取。
+- 无权限响应不会误清理登录态；登录支持初始化提示与二次验证 challenge。
+- 下载使用 `media_source + media_id`，磁力和种子链接通过宿主原生接口提交；未识别资源由用户确认后继续。
+- 插件备份仍需要支持 v3 的 MoviePilotTools 配套插件，缺失时显示明确提示。
+- 本地加密数据及备份格式保持不变。验证范围和安装说明见 [v3 适配说明](docs/MOVIEPILOT_V3.md)。
 
 ### `v2.0.0`
 

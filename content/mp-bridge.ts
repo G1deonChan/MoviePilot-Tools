@@ -2,6 +2,7 @@
 // 1) 接收 popup 下发的凭据/TOTP 填充指令（PT 站）
 // 2) 插件管理 iframe 内嵌时：隐藏多余页面组件、同步主题/内部背景、上报路由变化
 import { MSG } from '../core/bus'
+import { mpPayload } from '../core/mp-response'
 import { addRuntimeMessageListener } from '../core/extension-context'
 import {
   getPluginEmbedNonce,
@@ -541,7 +542,10 @@ function applyAuthPayload(token: string, user: Record<string, unknown> | null): 
       fetch('/api/v1/user/current', { headers: { Authorization: `Bearer ${token}` } })
         .then((r) => (r.ok ? r.json() : null))
         .then((info) => {
-          if (info) persistUser(info as Record<string, unknown>)
+          const profile = mpPayload(info)
+          if (profile && typeof profile === 'object' && (profile as { success?: boolean }).success !== false) {
+            persistUser(profile as Record<string, unknown>)
+          }
           sessionStorage.setItem(RELOAD_MARK, '1')
           window.location.reload()
         })

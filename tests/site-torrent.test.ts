@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { AddTorrentIn, Site, SiteDomainAlias, SiteSupportingInfo } from '../core/types'
-import { buildSiteTorrent, findConfiguredSiteForUrl, findTorrentForPage } from '../services/site-torrent'
+import { buildSiteTorrent, findConfiguredSiteForUrl, findTorrentForPage, normalizeTorrentPageTitle } from '../services/site-torrent'
 
 const sites: Site[] = [
   {
@@ -34,6 +34,12 @@ const aliases: SiteDomainAlias[] = [
 ]
 
 describe('PT 站种子下载匹配', () => {
+  it('提取 NexusPHP 详情页资源名且保留 WEB-DL 和发布组', () => {
+    const release = 'Movie S02E11 2026 1080p WEB-DL x264 AAC-Group@ADWeb'
+    expect(normalizeTorrentPageTitle(`Audiences :: 种子详情 "${release}" - Powered by NexusPHP`)).toBe(release)
+    expect(normalizeTorrentPageTitle(`Site :: ${release}`)).toBe(release)
+    expect(normalizeTorrentPageTitle(`${release} - Site`)).toBe(release)
+  })
   it('支持主域名、自定义备用域名和 supporting 同身份域名', () => {
     expect(findConfiguredSiteForUrl('https://tracker.example.net/details.php?id=1', sites, supporting, aliases)?.id).toBe(21)
     expect(findConfiguredSiteForUrl('https://backup.example.com/details.php?id=1', sites, supporting, aliases)?.id).toBe(21)
@@ -50,6 +56,10 @@ describe('PT 站种子下载匹配', () => {
     ]
     expect(findTorrentForPage('https://example.org/details.php?id=876', resources)?.title).toBe('Movie.2026.1080p')
     expect(findTorrentForPage('https://example.org/torrent/876', resources)?.enclosure).toContain('download.php')
+    expect(findTorrentForPage('https://example.org/torrents/876', resources)?.title).toBe('Movie.2026.1080p')
+    expect(findTorrentForPage('https://example.org/view/876', resources)?.title).toBe('Movie.2026.1080p')
+    expect(findTorrentForPage('https://example.org/torrents/87', resources)).toBeUndefined()
+    expect(findTorrentForPage('https://example.org/details.php?id=876&hit=1', resources)?.title).toBe('Movie.2026.1080p')
   })
 
   it('构建下载参数时保留资源字段并补齐站点鉴权', () => {
@@ -75,5 +85,14 @@ describe('PT 站种子下载匹配', () => {
       size: 1024,
       seeders: 8,
     })
+  })
+
+  it('支持资源中的相对详情地址和带动态解析标记的下载链接', () => {
+    expect(findTorrentForPage('https://example.org/details.php?id=876', [{
+      title: 'Movie', page_url: '/details.php?id=876', enclosure: '[dynamic]https://example.org/download.php?id=876',
+    }])?.title).toBe('Movie')
+    expect(findTorrentForPage('https://example.org/torrents/876', [{
+      title: 'Movie', enclosure: '[]https://example.org/download.php?id=876',
+    }])?.title).toBe('Movie')
   })
 })

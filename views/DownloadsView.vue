@@ -270,11 +270,11 @@ import {
   deleteTask,
   addDownload,
   fetchDirectories,
-  fetchSiteResources,
+  resolveSiteTorrent,
 } from '../services/download'
 import { fetchSites, fetchSupporting } from '../services/site-manage'
 import { loadCustomDomainAliases } from '../services/site-domain-alias'
-import { buildSiteTorrent, findConfiguredSiteForUrl, findTorrentForPage } from '../services/site-torrent'
+import { buildSiteTorrent, findConfiguredSiteForUrl } from '../services/site-torrent'
 import type { DownloadClient, DownloadTask, DownloadDirectory } from '../core/types'
 import { STORAGE_KEYS, storageGet, storageRemove } from '../core/storage'
 import { getActiveBaseUrl } from '../core/auth-session'
@@ -615,6 +615,18 @@ async function confirmDirectFallback(title: string): Promise<boolean> {
   }
 }
 
+/** 服务端明确要求确认时才允许跳过识别，取消不提交第二次请求。 */
+async function confirmUnrecognized(title: string): Promise<boolean> {
+  try {
+    await confirmAction(`MoviePilot 无法识别“${title}”。是否按未识别资源继续下载？`, {
+      title: '确认未识别资源', kind: 'warning', confirmButtonText: '继续下载', cancelButtonText: '取消',
+    })
+    return true
+  } catch {
+    return false
+  }
+}
+
 async function submitSiteDownload(pageUrl: string): Promise<boolean> {
   const [sites, supporting, aliases] = await Promise.all([
     fetchSites(),
@@ -624,12 +636,9 @@ async function submitSiteDownload(pageUrl: string): Promise<boolean> {
   const site = findConfiguredSiteForUrl(pageUrl, sites, supporting, aliases)
   if (!site) throw new Error('未找到与该详情页匹配的 MoviePilot 站点配置')
 
-  const resources = await fetchSiteResources(site.id)
-  if (!resources.ok) throw new Error(resources.message || '站点资源加载失败')
-  const resource = findTorrentForPage(pageUrl, resources.data)
-  if (!resource?.enclosure) {
-    throw new Error('未在站点资源中找到当前种子，请确认 MoviePilot 站点 Cookie 有效后重试')
-  }
+  const resolved = await resolveSiteTorrent(site.id, pageUrl, sitePageTitle.value)
+  if (!resolved.ok || !resolved.torrent) throw new Error(resolved.message || '未找到当前种子')
+  const resource = resolved.torrent
 
   const torrent = buildSiteTorrent(
     resource,
@@ -647,6 +656,14 @@ async function submitSiteDownload(pageUrl: string): Promise<boolean> {
   if (res.ok) return true
 
   const reason = res.message || '添加失败'
+  if (res.requiresConfirmation) {
+    if (!(await confirmUnrecognized(torrent.title))) return false
+    const confirmed = await addDownload({
+      torrent_in: torrent, downloader, save_path: savePath.value || undefined, allow_unrecognized: true,
+    })
+    if (!confirmed.ok) throw new Error(confirmed.message || '添加失败')
+    return true
+  }
   if (!isMediaRecognitionFailure(reason)) throw new Error(reason)
   if (!(await confirmDirectFallback(torrent.title))) return false
 
@@ -689,10 +706,18 @@ async function onSubmitAdd() {
       for (const url of lines) {
         const title = extractTitleFromUrl(url)
         try {
-          const res = downloadType.value === 'magnet'
-            ? await directDownloadMagnet(url, directDownloadOptions(addDownloader.value))
-            : await directDownloadTorrentUrl(url, directDownloadOptions(addDownloader.value))
-          if (!res.ok) throw new Error(res.error || '未知错误')
+          // v3 原生下载负责服务器端取种和任务登记，无需安装辅助插件。
+          const payload = {
+            torrent_in: { title, enclosure: url, labels: downloadLabel.value ? [downloadLabel.value] : undefined },
+            downloader: addDownloader.value,
+            save_path: savePath.value,
+          }
+          let res = await addDownload(payload)
+          if (res.requiresConfirmation) {
+            if (!(await confirmUnrecognized(title))) return
+            res = await addDownload({ ...payload, allow_unrecognized: true })
+          }
+          if (!res.ok) throw new Error(res.message || '未知错误')
         } catch (error) {
           allOk = false
           const message = error instanceof Error ? error.message : '未知错误'

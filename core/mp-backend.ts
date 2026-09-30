@@ -116,7 +116,9 @@ export async function healthMp(): Promise<{ ok: boolean; data: MpHealth | null; 
     return {
       ok: false,
       data: null,
-      error: res.error || `HTTP ${res.status}` || '健康检查失败',
+      error: res.status === 404
+        ? '未找到 MoviePilotTools 插件，请安装支持 v3 的配套插件后使用插件备份或直接下载。'
+        : res.error || `健康检查失败（HTTP ${res.status}）`,
     }
   }
   const root = asRecord(res.data)

@@ -179,6 +179,10 @@ export interface AddDownloadRequest {
   save_path?: string
   tmdbid?: number
   doubanid?: string
+  media_source?: string
+  media_id?: string
+  music_type?: 'recording' | 'album'
+  allow_unrecognized?: boolean
   label?: string
 }
 

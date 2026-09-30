@@ -8,6 +8,7 @@ import { getPublicStore, updatePublicStore } from '../core/store-repository'
 import { loadStoredSites } from '../services/site-manage'
 import { domainsMatch, loadCustomDomainAliases } from '../services/site-domain-alias'
 import { fetchSupportingFromBackground } from './site-supporting'
+import { normalizeTorrentPageTitle } from '../services/site-torrent'
 
 const CLS = {
   BTN: 'mp-ext-pt-float-btn',
@@ -161,11 +162,7 @@ function extractPageTitle(): string {
   try {
     const pageTitle = document.title
     if (pageTitle && pageTitle.trim() && !pageTitle.includes('404') && !pageTitle.includes('Not Found')) {
-      const cleanTitle = pageTitle
-        .replace(/\s*-\s*[^-]+$/, '')
-        .replace(/\s*::\s*[^:]+$/, '')
-        .replace(/\s*\|\s*[^|]+$/, '')
-        .trim()
+      const cleanTitle = normalizeTorrentPageTitle(pageTitle)
       if (cleanTitle && cleanTitle.length > 3) return cleanTitle
     }
 

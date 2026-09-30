@@ -1,5 +1,6 @@
 // Fetch 薄封装：统一注入 Bearer、401 静默续期重试、统一错误结构
 import { clearActiveSession, getActiveBaseUrl, getActiveToken } from './auth-session'
+import { mpErrorMessage, mpPayload } from './mp-response'
 
 export interface ApiResult<T = unknown> {
   ok: boolean
@@ -35,7 +36,7 @@ function isTokenLikeUnauthorized(status: number, data: unknown): boolean {
             '',
         )
       : String(data ?? '')
-  return /token|unauth|unauthorized|forbidden|过期|失效|未授权|登录/i.test(detail)
+  return /token.*(?:expired|invalid)|(?:expired|invalid).*token|令牌.*(?:过期|失效|无效)|未登录|登录已过期/i.test(detail)
 }
 
 export async function request<T = unknown>(
@@ -110,7 +111,17 @@ export async function request<T = unknown>(
       void sendUnauthorized()
     }
 
-    return { ok: res.ok, status: res.status, data: data as T }
+    const businessFailed = !!data && typeof data === 'object' &&
+      (data as { success?: unknown }).success === false
+    const ok = res.ok && !businessFailed
+    // 插件文件接口拥有独立协议，只对宿主普通 JSON 响应拆包。
+    const payload = ok && !url.pathname.startsWith('/api/v1/plugin/') ? mpPayload(data) : data
+    return {
+      ok,
+      status: res.status,
+      data: payload as T,
+      error: ok ? undefined : mpErrorMessage(data, `请求失败（HTTP ${res.status}）`),
+    }
   } catch (e) {
     return { ok: false, status: 0, data: null as T, error: String(e) }
   }

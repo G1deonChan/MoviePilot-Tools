@@ -67,4 +67,42 @@ describe('HTTP 认证刷新', () => {
 
     expect(mocks.clearActiveSession).toHaveBeenCalledTimes(1)
   })
+
+  it('v3 权限不足不续期或清理当前账号', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(response(403, { success: false, message: 'Forbidden', data: null }))
+    const refresh = vi.fn()
+    registerTokenRefreshHandler(refresh)
+    const result = await request('/api/v1/system/env')
+    expect(result.ok).toBe(false)
+    expect(result.error).toBe('Forbidden')
+    expect(refresh).not.toHaveBeenCalled()
+    expect(mocks.clearActiveSession).not.toHaveBeenCalled()
+  })
+
+  it('普通 JSON 拆包后保持业务对象与数组类型', async () => {
+    const sites = [{ id: 1, name: 'PT' }]
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(response(200, { success: true, message: '', data: sites }))
+    expect((await request('/api/v1/site/')).data).toEqual(sites)
+  })
+
+  it('HTTP 200 的业务失败保留确认信息并返回失败', async () => {
+    const body = { success: false, message: '无法识别媒体信息', data: { requires_confirmation: true } }
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(response(200, body))
+    const result = await request('/api/v1/download/add', { method: 'POST', body: {} })
+    expect(result).toMatchObject({ ok: false, status: 200, error: body.message, data: body })
+  })
+
+  it('插件自定义协议保持原样', async () => {
+    const body = { success: true, message: '', data: { path: 'admin/backup.json' } }
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(response(200, body))
+    expect((await request('/api/v1/plugin/MoviePilotTools/upload')).data).toEqual(body)
+  })
+
+  it('空数据操作结果保留 success 且直接响应不变', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+    const body = { success: true, message: '', data: null }
+    fetchMock.mockResolvedValueOnce(response(200, body)).mockResolvedValueOnce(response(200, { name: 'user' }))
+    expect((await request('/api/v1/site/', { method: 'PUT', body: {} })).data).toEqual(body)
+    expect((await request('/api/v1/user/current')).data).toEqual({ name: 'user' })
+  })
 })
