@@ -4,6 +4,12 @@ const apiGet = vi.fn()
 
 vi.mock('../core/http', () => ({
   api: { get: apiGet },
+  unwrapApiData: (data: unknown) => {
+    if (data && typeof data === 'object' && 'data' in (data as Record<string, unknown>)) {
+      return (data as { data: unknown }).data
+    }
+    return data
+  },
 }))
 
 async function loadService() {

@@ -22,6 +22,18 @@ vi.mock('../core/http', () => ({
     post: vi.fn(),
     del: vi.fn(),
   },
+  unwrapApiData: (data: unknown) => {
+    if (data && typeof data === 'object' && 'data' in (data as Record<string, unknown>)) {
+      return (data as { data: unknown }).data
+    }
+    return data
+  },
+  readApiMessage: (data: unknown) => {
+    if (!data || typeof data !== 'object') return ''
+    const root = data as Record<string, unknown>
+    const message = root.message_i18n ?? root.message ?? root.detail
+    return typeof message === 'string' ? message.trim() : ''
+  },
 }))
 
 import { fetchSites, loadStoredSites } from '../services/site-manage'
